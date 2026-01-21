@@ -1,0 +1,885 @@
+---
+title: "Next.js: The Complete Guide to Modern React Development"
+publishedAt: "2026-01-22"
+author: "Subhajit Dolai"
+summary: "Master Next.js from fundamentals to advanced features: App Router, Server Components, data fetching, routing, image optimization, deployment, and production best practices."
+image: "https://images.unsplash.com/photo-1633356122544-f134324a6cee?w=800&h=192&fit=crop"
+---
+
+Next.js has become the default choice for building React applications. It's not hype—it's earned its position by solving real problems that every React developer faces: routing, data fetching, SEO, performance optimization, and deployment.
+
+This guide covers everything you need to know about Next.js, from basic concepts to advanced patterns. Whether you're building your first Next.js app or optimizing a production application, you'll find practical insights and real-world solutions.
+
+Let's start from the beginning and work our way up to production-grade applications.
+
+## Why Next.js exists
+
+React is a library for building user interfaces, not a complete framework. When you build a React app, you immediately face decisions:
+- How do I handle routing?
+- How do I fetch data without waterfalls?
+- How do I make my app SEO-friendly?
+- How do I optimize images?
+- How do I deploy this?
+
+Next.js answers all these questions with sensible defaults and escape hatches when you need more control. It's React plus everything you need to ship production applications.
+
+## The App Router: modern Next.js architecture
+
+Next.js 13 introduced the App Router, a fundamental shift in how Next.js applications are structured. If you've used Next.js before, the App Router might feel unfamiliar. It's worth learning because it unlocks powerful capabilities.
+
+### File-based routing
+
+Every folder in the `app` directory becomes a route. Files named `page.js` define the UI for that route:
+
+```
+app/
+├── page.js          → /
+├── about/
+│   └── page.js      → /about
+├── blog/
+│   └── page.js      → /blog
+└── blog/
+    └── [slug]/
+        └── page.js  → /blog/post-title
+```
+
+This structure makes routes obvious. No configuration files, no route definitions. The file system is the API.
+
+### Creating your first page
+
+```javascript
+// app/page.js
+export default function Home() {
+  return (
+    <main>
+      <h1>Welcome to Next.js</h1>
+      <p>This is the homepage</p>
+    </main>
+  );
+}
+```
+
+That's it. Navigate to `/` and see your page.
+
+### Dynamic routes
+
+Wrap a folder name in brackets for dynamic segments:
+
+```javascript
+// app/blog/[slug]/page.js
+export default function BlogPost({ params }) {
+  return <h1>Post: {params.slug}</h1>;
+}
+```
+
+Visit `/blog/hello-world` and `params.slug` will be `"hello-world"`.
+
+### Nested layouts
+
+Layouts wrap child pages. They persist across navigation, keeping state and avoiding re-renders:
+
+```javascript
+// app/layout.js (root layout)
+export default function RootLayout({ children }) {
+  return (
+    <html lang="en">
+      <body>
+        <nav>
+          <a href="/">Home</a>
+          <a href="/blog">Blog</a>
+        </nav>
+        {children}
+      </body>
+    </html>
+  );
+}
+```
+
+```javascript
+// app/blog/layout.js (blog layout)
+export default function BlogLayout({ children }) {
+  return (
+    <div>
+      <aside>Blog sidebar</aside>
+      <main>{children}</main>
+    </div>
+  );
+}
+```
+
+The blog layout only wraps blog pages. The root layout wraps everything. Layouts compose naturally.
+
+### Route groups
+
+Organize routes without affecting URLs using parentheses:
+
+```
+app/
+├── (marketing)/
+│   ├── about/
+│   │   └── page.js      → /about
+│   └── pricing/
+│       └── page.js      → /pricing
+└── (shop)/
+    ├── products/
+    │   └── page.js      → /products
+    └── cart/
+        └── page.js      → /cart
+```
+
+The `(marketing)` and `(shop)` folders organize code but don't appear in URLs. Each group can have its own layout.
+
+## Server Components: rethinking data fetching
+
+Server Components are the biggest innovation in the App Router. They run only on the server, never ship JavaScript to the client, and can access backend resources directly.
+
+### What are Server Components?
+
+By default, all components in the `app` directory are Server Components. They:
+- Run on the server during request time
+- Can access databases, file systems, and APIs directly
+- Don't ship JavaScript to the client
+- Can't use hooks like `useState` or `useEffect`
+- Can't use browser APIs
+
+### Fetching data in Server Components
+
+No `useEffect`, no loading states, no client-side data fetching:
+
+```javascript
+// app/posts/page.js
+async function getPosts() {
+  const res = await fetch('https://api.example.com/posts');
+  return res.json();
+}
+
+export default async function PostsPage() {
+  const posts = await getPosts();
+  
+  return (
+    <div>
+      <h1>Blog Posts</h1>
+      {posts.map(post => (
+        <article key={post.id}>
+          <h2>{post.title}</h2>
+          <p>{post.excerpt}</p>
+        </article>
+      ))}
+    </div>
+  );
+}
+```
+
+The component is async. Data fetching happens on the server. The HTML is generated with data already present. No loading spinners, no cumulative layout shift.
+
+### Accessing databases directly
+
+Server Components can query databases without creating API routes:
+
+```javascript
+// app/posts/page.js
+import { createClient } from '@supabase/supabase-js';
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_KEY
+);
+
+export default async function PostsPage() {
+  const { data: posts } = await supabase
+    .from('posts')
+    .select('*')
+    .order('created_at', { ascending: false });
+  
+  return (
+    <div>
+      {posts.map(post => (
+        <article key={post.id}>
+          <h2>{post.title}</h2>
+        </article>
+      ))}
+    </div>
+  );
+}
+```
+
+No API layer needed. The component talks to the database directly.
+
+### Client Components: when you need interactivity
+
+Mark components that need client-side JavaScript with `'use client'`:
+
+```javascript
+'use client';
+
+import { useState } from 'react';
+
+export default function Counter() {
+  const [count, setCount] = useState(0);
+  
+  return (
+    <div>
+      <p>Count: {count}</p>
+      <button onClick={() => setCount(count + 1)}>
+        Increment
+      </button>
+    </div>
+  );
+}
+```
+
+Now this component runs on the client. It can use hooks, handle events, and access browser APIs.
+
+### Composing Server and Client Components
+
+The pattern: Server Components fetch data, Client Components handle interactivity:
+
+```javascript
+// app/posts/page.js (Server Component)
+import PostList from './PostList';
+
+async function getPosts() {
+  const res = await fetch('https://api.example.com/posts');
+  return res.json();
+}
+
+export default async function PostsPage() {
+  const posts = await getPosts();
+  
+  return (
+    <div>
+      <h1>Blog Posts</h1>
+      <PostList posts={posts} />
+    </div>
+  );
+}
+```
+
+```javascript
+// app/posts/PostList.js (Client Component)
+'use client';
+
+import { useState } from 'react';
+
+export default function PostList({ posts }) {
+  const [filter, setFilter] = useState('');
+  
+  const filtered = posts.filter(post =>
+    post.title.toLowerCase().includes(filter.toLowerCase())
+  );
+  
+  return (
+    <div>
+      <input
+        value={filter}
+        onChange={(e) => setFilter(e.target.value)}
+        placeholder="Filter posts..."
+      />
+      {filtered.map(post => (
+        <article key={post.id}>
+          <h2>{post.title}</h2>
+        </article>
+      ))}
+    </div>
+  );
+}
+```
+
+The Server Component fetches data. The Client Component adds filtering. The data arrives pre-rendered, then becomes interactive.
+
+## Data fetching patterns
+
+Next.js offers multiple ways to fetch data, each optimized for different use cases.
+
+### Static rendering (default)
+
+Pages render at build time and serve the same HTML to everyone:
+
+```javascript
+export default async function AboutPage() {
+  return <h1>About Us</h1>;
+}
+```
+
+This page renders once during build. It's incredibly fast because it's just static HTML on the CDN.
+
+### Dynamic rendering
+
+Pages that need request-time data render on each request:
+
+```javascript
+export default async function ProfilePage() {
+  const user = await getCurrentUser(); // Reads cookies or headers
+  
+  return <h1>Welcome, {user.name}</h1>;
+}
+```
+
+Because this component accesses request data, Next.js automatically makes it dynamic.
+
+### Incremental Static Regeneration (ISR)
+
+Static pages that update periodically:
+
+```javascript
+export const revalidate = 60; // Revalidate every 60 seconds
+
+async function getPosts() {
+  const res = await fetch('https://api.example.com/posts');
+  return res.json();
+}
+
+export default async function BlogPage() {
+  const posts = await getPosts();
+  
+  return (
+    <div>
+      {posts.map(post => (
+        <article key={post.id}>
+          <h2>{post.title}</h2>
+        </article>
+      ))}
+    </div>
+  );
+}
+```
+
+The first user sees a cached version. If the cache is older than 60 seconds, Next.js regenerates it in the background. The next user sees the updated version.
+
+### Streaming with Suspense
+
+Show content immediately while slow parts load:
+
+```javascript
+import { Suspense } from 'react';
+
+async function Posts() {
+  // This takes 2 seconds
+  const posts = await getPosts();
+  return <PostList posts={posts} />;
+}
+
+export default function BlogPage() {
+  return (
+    <div>
+      <h1>Blog</h1>
+      <Suspense fallback={<div>Loading posts...</div>}>
+        <Posts />
+      </Suspense>
+    </div>
+  );
+}
+```
+
+The heading appears instantly. Posts stream in when ready. The page doesn't wait for everything before showing anything.
+
+### Parallel data fetching
+
+Fetch multiple things simultaneously:
+
+```javascript
+async function getUser(id) {
+  const res = await fetch(`https://api.example.com/users/${id}`);
+  return res.json();
+}
+
+async function getPosts(userId) {
+  const res = await fetch(`https://api.example.com/posts?author=${userId}`);
+  return res.json();
+}
+
+export default async function ProfilePage({ params }) {
+  // These requests happen in parallel
+  const [user, posts] = await Promise.all([
+    getUser(params.id),
+    getPosts(params.id)
+  ]);
+  
+  return (
+    <div>
+      <h1>{user.name}</h1>
+      <PostList posts={posts} />
+    </div>
+  );
+}
+```
+
+Both requests start at the same time. The page waits for both but doesn't create a waterfall.
+
+### Request memoization
+
+Next.js automatically deduplicates identical requests:
+
+```javascript
+async function getUser(id) {
+  const res = await fetch(`https://api.example.com/users/${id}`);
+  return res.json();
+}
+
+async function UserProfile({ id }) {
+  const user = await getUser(id);
+  return <div>{user.name}</div>;
+}
+
+async function UserPosts({ id }) {
+  const user = await getUser(id); // Same request, cached automatically
+  const posts = await getUserPosts(id);
+  return <div>...</div>;
+}
+```
+
+Both components call `getUser(id)`. Next.js makes only one actual request. The second call uses the cached result.
+
+## Image optimization
+
+Next.js automatically optimizes images for modern formats, responsive sizes, and lazy loading.
+
+### The Image component
+
+```javascript
+import Image from 'next/image';
+
+export default function Hero() {
+  return (
+    <Image
+      src="/hero.jpg"
+      alt="Hero image"
+      width={1200}
+      height={600}
+      priority // Load immediately (above fold)
+    />
+  );
+}
+```
+
+Next.js:
+- Converts to WebP/AVIF automatically
+- Generates multiple sizes for responsive images
+- Lazy loads images below the fold
+- Prevents layout shift with explicit dimensions
+
+### Remote images
+
+For images from external sources:
+
+```javascript
+// next.config.js
+module.exports = {
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'cdn.example.com',
+      },
+    ],
+  },
+};
+```
+
+```javascript
+<Image
+  src="https://cdn.example.com/photo.jpg"
+  alt="Remote image"
+  width={800}
+  height={600}
+/>
+```
+
+Next.js optimizes remote images the same way as local ones.
+
+### Fill container images
+
+For responsive containers:
+
+```javascript
+<div style={{ position: 'relative', width: '100%', height: '400px' }}>
+  <Image
+    src="/background.jpg"
+    alt="Background"
+    fill
+    style={{ objectFit: 'cover' }}
+  />
+</div>
+```
+
+The image fills its container while maintaining aspect ratio.
+
+## Metadata and SEO
+
+Next.js makes SEO easy with built-in metadata handling.
+
+### Static metadata
+
+```javascript
+// app/page.js
+export const metadata = {
+  title: 'Home - My Website',
+  description: 'Welcome to my awesome website',
+  openGraph: {
+    title: 'Home - My Website',
+    description: 'Welcome to my awesome website',
+    images: ['/og-image.jpg'],
+  },
+};
+
+export default function HomePage() {
+  return <h1>Welcome</h1>;
+}
+```
+
+Next.js generates the correct meta tags automatically.
+
+### Dynamic metadata
+
+For pages with dynamic content:
+
+```javascript
+// app/blog/[slug]/page.js
+export async function generateMetadata({ params }) {
+  const post = await getPost(params.slug);
+  
+  return {
+    title: post.title,
+    description: post.excerpt,
+    openGraph: {
+      title: post.title,
+      description: post.excerpt,
+      images: [post.coverImage],
+    },
+  };
+}
+
+export default async function BlogPost({ params }) {
+  const post = await getPost(params.slug);
+  return <article>{post.content}</article>;
+}
+```
+
+Each blog post gets unique, SEO-optimized metadata.
+
+### JSON-LD structured data
+
+```javascript
+export default function ArticlePage({ post }) {
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Article',
+    headline: post.title,
+    author: {
+      '@type': 'Person',
+      name: post.author,
+    },
+    datePublished: post.publishedAt,
+  };
+  
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <article>{post.content}</article>
+    </>
+  );
+}
+```
+
+Search engines understand your content better with structured data.
+
+## API routes and server actions
+
+Next.js lets you build API endpoints alongside your frontend code.
+
+### Creating API routes
+
+```javascript
+// app/api/posts/route.js
+import { NextResponse } from 'next/server';
+
+export async function GET() {
+  const posts = await db.posts.findMany();
+  return NextResponse.json(posts);
+}
+
+export async function POST(request) {
+  const body = await request.json();
+  const post = await db.posts.create({ data: body });
+  return NextResponse.json(post, { status: 201 });
+}
+```
+
+Access at `/api/posts`. Standard HTTP methods map to exported functions.
+
+### Dynamic API routes
+
+```javascript
+// app/api/posts/[id]/route.js
+export async function GET(request, { params }) {
+  const post = await db.posts.findUnique({
+    where: { id: params.id }
+  });
+  
+  if (!post) {
+    return NextResponse.json(
+      { error: 'Post not found' },
+      { status: 404 }
+    );
+  }
+  
+  return NextResponse.json(post);
+}
+```
+
+### Server Actions: mutations without API routes
+
+Server Actions let you call server-side functions directly from forms:
+
+```javascript
+// app/actions.js
+'use server';
+
+export async function createPost(formData) {
+  const title = formData.get('title');
+  const content = formData.get('content');
+  
+  await db.posts.create({
+    data: { title, content }
+  });
+  
+  redirect('/posts');
+}
+```
+
+```javascript
+// app/posts/new/page.js
+import { createPost } from '@/app/actions';
+
+export default function NewPost() {
+  return (
+    <form action={createPost}>
+      <input name="title" required />
+      <textarea name="content" required />
+      <button type="submit">Create Post</button>
+    </form>
+  );
+}
+```
+
+No API route needed. The form submits directly to the server function. It works without JavaScript, providing progressive enhancement.
+
+## Middleware: request-time logic
+
+Middleware runs before requests reach your pages, enabling authentication, redirects, and rewrites.
+
+```javascript
+// middleware.js
+import { NextResponse } from 'next/server';
+
+export function middleware(request) {
+  const token = request.cookies.get('token');
+  
+  // Protect admin routes
+  if (request.nextUrl.pathname.startsWith('/admin')) {
+    if (!token) {
+      return NextResponse.redirect(new URL('/login', request.url));
+    }
+  }
+  
+  // Add custom header
+  const response = NextResponse.next();
+  response.headers.set('x-custom-header', 'value');
+  return response;
+}
+
+export const config = {
+  matcher: ['/admin/:path*', '/api/:path*']
+};
+```
+
+Middleware runs at the edge, executing in milliseconds globally.
+
+## Error handling and loading states
+
+Next.js provides file-based error and loading UI.
+
+### Loading states
+
+```javascript
+// app/posts/loading.js
+export default function Loading() {
+  return <div>Loading posts...</div>;
+}
+```
+
+This shows automatically while `app/posts/page.js` loads data. No manual loading states needed.
+
+### Error boundaries
+
+```javascript
+// app/posts/error.js
+'use client';
+
+export default function Error({ error, reset }) {
+  return (
+    <div>
+      <h2>Something went wrong!</h2>
+      <p>{error.message}</p>
+      <button onClick={reset}>Try again</button>
+    </div>
+  );
+}
+```
+
+Errors in `app/posts/page.js` or its children show this error UI. The `reset` function attempts to re-render.
+
+### Not found pages
+
+```javascript
+// app/posts/[slug]/not-found.js
+export default function NotFound() {
+  return (
+    <div>
+      <h2>Post Not Found</h2>
+      <p>The post you're looking for doesn't exist.</p>
+    </div>
+  );
+}
+```
+
+Call `notFound()` from page components to show this:
+
+```javascript
+import { notFound } from 'next/navigation';
+
+export default async function PostPage({ params }) {
+  const post = await getPost(params.slug);
+  
+  if (!post) {
+    notFound(); // Shows not-found.js
+  }
+  
+  return <article>{post.content}</article>;
+}
+```
+
+## Deployment and production optimization
+
+Next.js is optimized for Vercel deployment but works anywhere that runs Node.js.
+
+### Building for production
+
+```bash
+npm run build
+```
+
+This:
+- Optimizes your bundle
+- Pre-renders static pages
+- Generates optimized images
+- Creates server bundles
+
+### Analyzing bundle size
+
+```bash
+ANALYZE=true npm run build
+```
+
+See what's in your JavaScript bundles and identify optimization opportunities.
+
+### Environment variables
+
+```bash
+# .env.local
+DATABASE_URL=postgres://localhost/mydb
+NEXT_PUBLIC_API_URL=https://api.example.com
+```
+
+Variables prefixed with `NEXT_PUBLIC_` are exposed to the browser. Others stay server-side only.
+
+### Static export
+
+For static-only sites:
+
+```javascript
+// next.config.js
+module.exports = {
+  output: 'export',
+};
+```
+
+```bash
+npm run build
+```
+
+Generates a pure static site in the `out` directory. Deploy to any static host.
+
+### Docker deployment
+
+```dockerfile
+FROM node:18-alpine
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci
+COPY . .
+RUN npm run build
+CMD ["npm", "start"]
+```
+
+Build and run:
+
+```bash
+docker build -t my-nextjs-app .
+docker run -p 3000:3000 my-nextjs-app
+```
+
+## Performance best practices
+
+### Use Server Components by default
+
+Only add `'use client'` when you need client-side JavaScript. Server Components:
+- Ship less JavaScript
+- Fetch data faster
+- Improve SEO
+
+### Implement streaming
+
+Use `<Suspense>` to show content incrementally. Don't wait for slow queries before showing anything.
+
+### Optimize images
+
+Always use the `<Image>` component. Unoptimized images are the biggest performance killer.
+
+### Set proper cache headers
+
+```javascript
+export const revalidate = 3600; // Cache for 1 hour
+```
+
+Static content should cache aggressively.
+
+### Use route prefetching
+
+Next.js prefetches routes automatically when `<Link>` components appear in the viewport. Users perceive instant navigation.
+
+### Code splitting
+
+Next.js automatically code-splits by route. Large dependencies should be dynamically imported:
+
+```javascript
+import dynamic from 'next/dynamic';
+
+const Chart = dynamic(() => import('./Chart'), {
+  loading: () => <p>Loading chart...</p>,
+  ssr: false // Don't render on server
+});
+```
+
+## Wrapping up
+
+Next.js transforms React from a library into a complete framework for production applications. It handles routing, data fetching, SEO, image optimization, and deployment—all with sensible defaults and escape hatches for customization.
+
+The App Router and Server Components represent a fundamental shift in how we build web applications. Instead of fetching data on the client and showing loading states, we fetch on the server and stream HTML. Instead of shipping megabytes of JavaScript, we send HTML and hydrate only interactive parts.
+
+Start with the basics: file-based routing, Server Components for data fetching, Client Components for interactivity. As you build, explore ISR for caching, Suspense for streaming, and Server Actions for mutations.
+
+Next.js isn't just a framework—it's a new way of thinking about web development. Master it, and you'll build faster, more performant, and more maintainable applications.

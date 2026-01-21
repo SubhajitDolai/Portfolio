@@ -1,0 +1,886 @@
+---
+title: "Supabase: The Complete Backend Platform You're Probably Underusing"
+publishedAt: "2026-01-22"
+author: "Subhajit Dolai"
+summary: "Discover Supabase's full potential: PostgreSQL database, real-time subscriptions, authentication, file storage, edge functions, and more. Stop building backends from scratch."
+image: "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=800&h=192&fit=crop"
+---
+
+Most developers discover Supabase when they need authentication or a quick database. They sign up, add auth to their app, and call it done. But Supabase is so much more than "Firebase alternative" or "easy authentication."
+
+Supabase is a complete backend platform built on PostgreSQL, offering database, authentication, file storage, real-time subscriptions, edge functions, and more. It's open source, SQL-based, and powerful enough to run production applications serving millions of users.
+
+This guide explores everything Supabase offers and how to leverage its full power to build applications faster without sacrificing control or scalability.
+
+## PostgreSQL database: real SQL at your fingertips
+
+At Supabase's core is PostgreSQL, the world's most advanced open source relational database. This isn't a simplified database wrapper—it's actual PostgreSQL with all its power.
+
+### Why PostgreSQL matters
+
+Unlike NoSQL solutions where you're limited to key-value lookups or document queries, PostgreSQL gives you:
+- **Complex joins** across multiple tables
+- **Transactions** for data consistency
+- **Foreign keys and constraints** for data integrity
+- **Triggers and functions** for business logic
+- **Full-text search** without external services
+- **JSON columns** when you need flexibility
+
+You get relational database power with the flexibility to store JSON when needed. Best of both worlds.
+
+### Creating tables
+
+The Supabase dashboard includes a Table Editor with a visual interface. Click "New Table," define your columns, and you're done.
+
+But the real power comes from SQL. Supabase gives you a SQL editor where you can:
+
+```sql
+CREATE TABLE posts (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  title TEXT NOT NULL,
+  content TEXT,
+  author_id UUID REFERENCES auth.users(id),
+  published BOOLEAN DEFAULT false,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Add an index for faster queries
+CREATE INDEX idx_posts_author ON posts(author_id);
+
+-- Add full-text search
+CREATE INDEX idx_posts_search ON posts USING gin(to_tsvector('english', title || ' ' || content));
+```
+
+This creates a posts table with proper relationships, indexes, and search capability. Try doing that in a NoSQL database.
+
+### Row Level Security (RLS)
+
+This is where Supabase shines. Instead of writing authorization logic in your application, you define security rules directly in the database:
+
+```sql
+-- Enable RLS
+ALTER TABLE posts ENABLE ROW LEVEL SECURITY;
+
+-- Users can only read published posts or their own drafts
+CREATE POLICY "Users can read posts" ON posts
+  FOR SELECT USING (
+    published = true OR 
+    author_id = auth.uid()
+  );
+
+-- Users can only update their own posts
+CREATE POLICY "Users can update own posts" ON posts
+  FOR UPDATE USING (
+    author_id = auth.uid()
+  );
+
+-- Users can only delete their own posts
+CREATE POLICY "Users can delete own posts" ON posts
+  FOR DELETE USING (
+    author_id = auth.uid()
+  );
+```
+
+Now your database enforces authorization automatically. No middleware, no if statements checking user IDs. The database handles it.
+
+### Database functions
+
+Write reusable logic as PostgreSQL functions:
+
+```sql
+CREATE OR REPLACE FUNCTION get_user_post_count(user_id UUID)
+RETURNS INTEGER AS $$
+BEGIN
+  RETURN (
+    SELECT COUNT(*) 
+    FROM posts 
+    WHERE author_id = user_id
+  );
+END;
+$$ LANGUAGE plpgsql;
+```
+
+Call this from your application:
+
+```javascript
+const { data, error } = await supabase
+  .rpc('get_user_post_count', { user_id: userId });
+```
+
+Functions run in the database, reducing network overhead and keeping logic centralized.
+
+### Triggers for automation
+
+Automate tasks when data changes:
+
+```sql
+-- Update the updated_at timestamp automatically
+CREATE OR REPLACE FUNCTION update_updated_at()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.updated_at = NOW();
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER update_posts_updated_at
+  BEFORE UPDATE ON posts
+  FOR EACH ROW
+  EXECUTE FUNCTION update_updated_at();
+```
+
+Now every update automatically sets the timestamp. No application code needed.
+
+## Authentication: secure and flexible
+
+Supabase Auth handles everything from email/password to OAuth to magic links, with security best practices built in.
+
+### Email and password authentication
+
+The simplest option:
+
+```javascript
+// Sign up
+const { data, error } = await supabase.auth.signUp({
+  email: 'user@example.com',
+  password: 'secure-password'
+});
+
+// Sign in
+const { data, error } = await supabase.auth.signInWithPassword({
+  email: 'user@example.com',
+  password: 'secure-password'
+});
+
+// Sign out
+await supabase.auth.signOut();
+```
+
+Supabase handles:
+- Password hashing with bcrypt
+- Email verification
+- Password reset flows
+- Rate limiting to prevent brute force attacks
+
+### Magic link authentication
+
+Passwordless authentication via email:
+
+```javascript
+const { error } = await supabase.auth.signInWithOtp({
+  email: 'user@example.com'
+});
+```
+
+Supabase sends an email with a magic link. User clicks it, they're authenticated. No password to remember or manage.
+
+### OAuth providers
+
+Integrate with social providers:
+
+```javascript
+// Google OAuth
+await supabase.auth.signInWithOAuth({
+  provider: 'google'
+});
+
+// GitHub OAuth
+await supabase.auth.signInWithOAuth({
+  provider: 'github'
+});
+```
+
+Supported providers include:
+- Google, GitHub, GitLab
+- Facebook, Twitter, Discord
+- Apple, Microsoft, Slack
+- And many more
+
+Configure providers in the Supabase dashboard with your client IDs and secrets.
+
+### Phone authentication
+
+SMS-based authentication with OTP:
+
+```javascript
+// Send OTP
+await supabase.auth.signInWithOtp({
+  phone: '+1234567890'
+});
+
+// Verify OTP
+await supabase.auth.verifyOtp({
+  phone: '+1234567890',
+  token: '123456',
+  type: 'sms'
+});
+```
+
+Perfect for mobile apps or regions where SMS is preferred.
+
+### Multi-factor authentication
+
+Add an extra security layer:
+
+```javascript
+// Enroll in MFA
+const { data, error } = await supabase.auth.mfa.enroll({
+  factorType: 'totp'
+});
+
+// User scans QR code with authenticator app
+
+// Verify the enrollment
+await supabase.auth.mfa.verify({
+  factorId: data.id,
+  code: '123456'
+});
+```
+
+Now users need their authenticator app code in addition to their password.
+
+### Session management
+
+Supabase handles sessions automatically with secure HTTP-only cookies:
+
+```javascript
+// Get current session
+const { data: { session } } = await supabase.auth.getSession();
+
+// Get current user
+const { data: { user } } = await supabase.auth.getUser();
+
+// Listen for auth state changes
+supabase.auth.onAuthStateChange((event, session) => {
+  if (event === 'SIGNED_IN') {
+    console.log('User signed in:', session.user);
+  }
+  if (event === 'SIGNED_OUT') {
+    console.log('User signed out');
+  }
+});
+```
+
+### Custom claims and metadata
+
+Store additional user data:
+
+```javascript
+// During signup
+await supabase.auth.signUp({
+  email: 'user@example.com',
+  password: 'password',
+  options: {
+    data: {
+      display_name: 'John Doe',
+      avatar_url: 'https://example.com/avatar.jpg'
+    }
+  }
+});
+
+// Access user metadata
+const { data: { user } } = await supabase.auth.getUser();
+console.log(user.user_metadata.display_name);
+```
+
+### Admin API for user management
+
+Manage users programmatically:
+
+```javascript
+// Create user (requires service role key)
+const { data, error } = await supabaseAdmin.auth.admin.createUser({
+  email: 'user@example.com',
+  password: 'password',
+  email_confirm: true
+});
+
+// Delete user
+await supabaseAdmin.auth.admin.deleteUser(userId);
+
+// List users
+const { data: { users } } = await supabaseAdmin.auth.admin.listUsers();
+```
+
+## Real-time subscriptions: live data updates
+
+Supabase real-time lets you subscribe to database changes and receive updates instantly via WebSockets.
+
+### Subscribe to table changes
+
+Listen for inserts, updates, and deletes:
+
+```javascript
+const channel = supabase
+  .channel('posts-channel')
+  .on(
+    'postgres_changes',
+    { 
+      event: 'INSERT', 
+      schema: 'public', 
+      table: 'posts' 
+    },
+    (payload) => {
+      console.log('New post:', payload.new);
+    }
+  )
+  .subscribe();
+```
+
+Your application receives new posts instantly without polling.
+
+### Filter subscriptions
+
+Subscribe only to relevant changes:
+
+```javascript
+// Only posts by specific author
+supabase
+  .channel('user-posts')
+  .on(
+    'postgres_changes',
+    {
+      event: '*',
+      schema: 'public',
+      table: 'posts',
+      filter: `author_id=eq.${userId}`
+    },
+    (payload) => {
+      console.log('Change:', payload);
+    }
+  )
+  .subscribe();
+```
+
+### Subscribe to multiple events
+
+Listen for all changes to a table:
+
+```javascript
+supabase
+  .channel('all-posts')
+  .on(
+    'postgres_changes',
+    { event: '*', schema: 'public', table: 'posts' },
+    (payload) => {
+      if (payload.eventType === 'INSERT') {
+        console.log('New post:', payload.new);
+      }
+      if (payload.eventType === 'UPDATE') {
+        console.log('Updated:', payload.old, '->', payload.new);
+      }
+      if (payload.eventType === 'DELETE') {
+        console.log('Deleted:', payload.old);
+      }
+    }
+  )
+  .subscribe();
+```
+
+### Presence: track online users
+
+See who's currently active:
+
+```javascript
+const channel = supabase.channel('room1');
+
+// Track this user's presence
+channel
+  .on('presence', { event: 'sync' }, () => {
+    const state = channel.presenceState();
+    console.log('Online users:', state);
+  })
+  .subscribe(async (status) => {
+    if (status === 'SUBSCRIBED') {
+      await channel.track({
+        user_id: userId,
+        username: 'john_doe',
+        online_at: new Date().toISOString()
+      });
+    }
+  });
+```
+
+Perfect for chat applications, collaborative editors, or multiplayer games.
+
+### Broadcast: send messages between clients
+
+Real-time messaging without storing in the database:
+
+```javascript
+// Send a message
+channel.send({
+  type: 'broadcast',
+  event: 'cursor-move',
+  payload: { x: 100, y: 200, user: 'john' }
+});
+
+// Receive messages
+channel.on('broadcast', { event: 'cursor-move' }, (payload) => {
+  console.log('User moved cursor:', payload);
+});
+```
+
+Use this for cursors in collaborative tools, typing indicators, temporary notifications, etc.
+
+## Storage: file uploads made simple
+
+Supabase Storage provides S3-compatible object storage for files, images, and videos.
+
+### Creating buckets
+
+Buckets are like folders that organize your files:
+
+```javascript
+// Create a public bucket (files accessible to anyone)
+const { data, error } = await supabase.storage.createBucket('avatars', {
+  public: true
+});
+
+// Create a private bucket (requires authentication)
+const { data, error } = await supabase.storage.createBucket('documents', {
+  public: false
+});
+```
+
+### Uploading files
+
+```javascript
+const file = event.target.files[0];
+
+const { data, error } = await supabase.storage
+  .from('avatars')
+  .upload(`public/${user.id}.png`, file, {
+    cacheControl: '3600',
+    upsert: true // Overwrite if exists
+  });
+```
+
+### Downloading files
+
+```javascript
+const { data, error } = await supabase.storage
+  .from('avatars')
+  .download('public/user123.png');
+
+// Create a URL from the blob
+const url = URL.createObjectURL(data);
+```
+
+### Getting public URLs
+
+For public buckets:
+
+```javascript
+const { data } = supabase.storage
+  .from('avatars')
+  .getPublicUrl('public/user123.png');
+
+console.log(data.publicUrl);
+```
+
+Use this URL directly in img tags.
+
+### Creating signed URLs
+
+For private buckets, create temporary access URLs:
+
+```javascript
+const { data, error } = await supabase.storage
+  .from('documents')
+  .createSignedUrl('private/contract.pdf', 3600); // Expires in 1 hour
+
+console.log(data.signedUrl);
+```
+
+### Image transformations
+
+Resize and optimize images on the fly:
+
+```javascript
+const { data } = supabase.storage
+  .from('avatars')
+  .getPublicUrl('public/avatar.jpg', {
+    transform: {
+      width: 200,
+      height: 200,
+      resize: 'cover'
+    }
+  });
+```
+
+Supabase generates the thumbnail automatically. No external service needed.
+
+### Storage policies
+
+Control access with Row Level Security:
+
+```sql
+-- Allow authenticated users to upload to their own folder
+CREATE POLICY "Users can upload own files"
+ON storage.objects
+FOR INSERT
+TO authenticated
+WITH CHECK (
+  bucket_id = 'avatars' AND
+  (storage.foldername(name))[1] = auth.uid()::text
+);
+
+-- Allow anyone to view public avatars
+CREATE POLICY "Public avatars are viewable"
+ON storage.objects
+FOR SELECT
+TO public
+USING (bucket_id = 'avatars');
+```
+
+## Edge Functions: serverless with Deno
+
+Supabase Edge Functions are TypeScript/JavaScript functions that run globally on Deno Deploy.
+
+### Creating an edge function
+
+```typescript
+// supabase/functions/hello-world/index.ts
+import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
+
+serve(async (req) => {
+  const { name } = await req.json();
+  
+  return new Response(
+    JSON.stringify({ 
+      message: `Hello ${name}!` 
+    }),
+    { 
+      headers: { 'Content-Type': 'application/json' } 
+    }
+  );
+});
+```
+
+### Deploying edge functions
+
+```bash
+supabase functions deploy hello-world
+```
+
+Your function is now live at:
+```
+https://your-project.supabase.co/functions/v1/hello-world
+```
+
+### Calling edge functions
+
+```javascript
+const { data, error } = await supabase.functions.invoke('hello-world', {
+  body: { name: 'John' }
+});
+
+console.log(data); // { message: "Hello John!" }
+```
+
+### Database access from edge functions
+
+```typescript
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+
+serve(async (req) => {
+  const supabase = createClient(
+    Deno.env.get('SUPABASE_URL') ?? '',
+    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+  );
+  
+  const { data } = await supabase
+    .from('posts')
+    .select('*')
+    .limit(10);
+  
+  return new Response(JSON.stringify(data), {
+    headers: { 'Content-Type': 'application/json' }
+  });
+});
+```
+
+### Scheduled edge functions
+
+Run functions on a schedule using cron:
+
+```typescript
+// Deploy with --schedule flag
+// supabase functions deploy cleanup --schedule "0 0 * * *"
+
+serve(async () => {
+  // Runs daily at midnight
+  const supabase = createClient(/* ... */);
+  
+  await supabase
+    .from('old_data')
+    .delete()
+    .lt('created_at', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000));
+  
+  return new Response('Cleanup complete');
+});
+```
+
+### Using third-party APIs
+
+```typescript
+serve(async (req) => {
+  const { email } = await req.json();
+  
+  // Call external API
+  const response = await fetch('https://api.sendgrid.com/v3/mail/send', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${Deno.env.get('SENDGRID_KEY')}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      personalizations: [{
+        to: [{ email }]
+      }],
+      from: { email: 'noreply@example.com' },
+      subject: 'Welcome!',
+      content: [{
+        type: 'text/plain',
+        value: 'Thanks for signing up!'
+      }]
+    })
+  });
+  
+  return new Response(JSON.stringify({ sent: response.ok }));
+});
+```
+
+## Database webhooks: react to changes
+
+Trigger external services when database data changes.
+
+### Creating a webhook
+
+In the Supabase dashboard:
+1. Navigate to Database → Webhooks
+2. Create new webhook
+3. Configure the table and events to watch
+4. Provide the destination URL
+
+### Example webhook handler
+
+```javascript
+// Your external server
+app.post('/webhook/new-user', async (req, res) => {
+  const { record, old_record, type } = req.body;
+  
+  if (type === 'INSERT') {
+    // Send welcome email
+    await sendWelcomeEmail(record.email);
+    
+    // Add to mailing list
+    await addToMailingList(record);
+  }
+  
+  res.status(200).send('OK');
+});
+```
+
+### Webhook security
+
+Supabase signs webhook payloads. Verify the signature:
+
+```javascript
+const crypto = require('crypto');
+
+function verifyWebhook(payload, signature, secret) {
+  const hmac = crypto.createHmac('sha256', secret);
+  const digest = hmac.update(payload).digest('hex');
+  return crypto.timingSafeEqual(
+    Buffer.from(signature),
+    Buffer.from(digest)
+  );
+}
+```
+
+## Vector embeddings for AI applications
+
+Supabase supports pgvector for storing and querying vector embeddings, perfect for AI and semantic search.
+
+### Enable the extension
+
+```sql
+CREATE EXTENSION IF NOT EXISTS vector;
+```
+
+### Store embeddings
+
+```sql
+CREATE TABLE documents (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  content TEXT,
+  embedding VECTOR(1536) -- OpenAI embeddings are 1536 dimensions
+);
+
+-- Create an index for fast similarity search
+CREATE INDEX ON documents USING ivfflat (embedding vector_cosine_ops);
+```
+
+### Insert embeddings
+
+```javascript
+// Get embedding from OpenAI
+const response = await openai.embeddings.create({
+  input: 'Your text here',
+  model: 'text-embedding-ada-002'
+});
+
+const embedding = response.data[0].embedding;
+
+// Store in Supabase
+await supabase
+  .from('documents')
+  .insert({
+    content: 'Your text here',
+    embedding
+  });
+```
+
+### Similarity search
+
+```javascript
+// Search for similar documents
+const { data } = await supabase.rpc('match_documents', {
+  query_embedding: searchEmbedding,
+  match_threshold: 0.78,
+  match_count: 10
+});
+```
+
+With the function:
+
+```sql
+CREATE OR REPLACE FUNCTION match_documents (
+  query_embedding VECTOR(1536),
+  match_threshold FLOAT,
+  match_count INT
+)
+RETURNS TABLE (
+  id UUID,
+  content TEXT,
+  similarity FLOAT
+)
+LANGUAGE SQL STABLE
+AS $$
+  SELECT
+    id,
+    content,
+    1 - (embedding <=> query_embedding) AS similarity
+  FROM documents
+  WHERE 1 - (embedding <=> query_embedding) > match_threshold
+  ORDER BY similarity DESC
+  LIMIT match_count;
+$$;
+```
+
+## Database backups and point-in-time recovery
+
+Supabase automatically backs up your database daily.
+
+### Automated backups
+
+Free tier: 7 days of daily backups
+Pro tier: 7 days with point-in-time recovery
+Enterprise: Custom retention
+
+### Manual backups
+
+Download a backup anytime:
+
+```bash
+supabase db dump > backup.sql
+```
+
+### Restore from backup
+
+```bash
+supabase db reset
+psql -h db.your-project.supabase.co -U postgres -f backup.sql
+```
+
+### Point-in-time recovery (Pro+)
+
+Restore to any point in the last 7 days:
+
+1. Go to Database → Backups in dashboard
+2. Select date and time
+3. Restore
+
+Your database rolls back to that exact moment.
+
+## Local development with Supabase CLI
+
+Develop entirely offline with the Supabase CLI.
+
+### Initialize project
+
+```bash
+supabase init
+```
+
+### Start local Supabase
+
+```bash
+supabase start
+```
+
+This spins up:
+- PostgreSQL database
+- Auth server
+- Storage server
+- Real-time server
+- Edge Functions runtime
+
+All running locally in Docker.
+
+### Link to remote project
+
+```bash
+supabase link --project-ref your-project-id
+```
+
+### Pull remote schema
+
+```bash
+supabase db pull
+```
+
+### Create migrations
+
+```bash
+supabase migration new add_posts_table
+```
+
+Edit the generated SQL file, then apply:
+
+```bash
+supabase db reset
+```
+
+### Push to production
+
+```bash
+supabase db push
+```
+
+Your local schema changes deploy to production.
+
+## Wrapping up
+
+Supabase isn't just a backend-as-a-service. It's PostgreSQL with a complete suite of tools: authentication, real-time subscriptions, file storage, edge functions, vector embeddings, and more.
+
+The power comes from integration. Row Level Security connects authentication to database access. Real-time subscriptions work with RLS automatically. Storage policies use the same auth system. Everything works together seamlessly.
+
+Start with what you need—maybe authentication or a simple database—then expand as your application grows. Supabase scales from prototype to production without forcing you to rebuild.
+
+And because it's built on PostgreSQL and open source, you're never locked in. Export your data, self-host if needed, or migrate to any PostgreSQL-compatible service.
+
+Stop building backends from scratch. Use Supabase and focus on what makes your application unique.

@@ -1,0 +1,227 @@
+---
+title: "Git Cheat Sheet: Commands & Workflow"
+publishedAt: "2026-01-21"
+author: "Subhajit Dolai"
+summary: "Essential Git commands, commit conventions, and a simple workflow to keep your history clean and collaboration fast."
+image: "https://images.unsplash.com/photo-1517433456452-f9633a875f6f?w=800&h=192&fit=crop"
+---
+
+Git is the backbone of modern software development, yet many developers only scratch the surface of what it can do. Whether you're working solo or collaborating with a team, mastering Git's essential commands will save you countless hours and headaches.
+
+This guide covers everything you need to know: from basic setup and daily commands to advanced workflows and best practices. Think of it as your go-to reference while coding. Bookmark this page and keep it handy.
+
+> **TL;DR:** Keep commits small and focused, name branches clearly, and use consistent commit prefixes like `feat:` or `fix:` for a readable history. Your future self and teammates will thank you.
+
+## Why commit message prefixes matter
+
+Clean commit messages aren't just nice to have. They make code reviews faster, help you understand what changed at a glance, and make it easier to generate changelogs. Here's a quick reference for the most common prefixes:
+
+| Type | Purpose |
+| --- | --- |
+| `feat:` | A new feature |
+| `fix:` | A bug fix |
+| `chore:` | Routine tasks like build updates or config changes |
+| `docs:` | Documentation changes |
+| `style:` | Formatting only, no logic changes |
+| `refactor:` | Code restructuring without changing behavior |
+| `test:` | Adding or fixing tests |
+| `perf:` | Performance improvement |
+
+Keep your descriptions concise and specific. Instead of `fix: bug`, write `fix: handle null user in signup form`. The extra detail helps everyone understand what changed and why.
+
+## Getting started with Git
+
+Before you write a single line of code, configure Git with your identity. This ensures all your commits are properly attributed to you.
+
+```bash
+# Set your name and email for commit attribution
+git config --global user.name "Firstname Lastname"
+git config --global user.email "you@example.com"
+
+# Enable colorized output for better readability
+git config --global color.ui auto
+```
+
+These settings are global, meaning they'll apply to all repositories on your machine. You can override them per-project if needed.
+
+## Initialize and clone repositories
+
+Starting a new project? You'll need to initialize a Git repository. Working with existing code? Clone it from a remote source.
+
+```bash
+git init              # Initialize repository in current directory
+git clone <URL>       # Clone an existing repository
+```
+
+The `git init` command creates a `.git` folder in your project, which stores all version control information. The `git clone` command not only downloads the code but also sets up the remote connection automatically.
+
+## Staging and committing changes
+
+This is where the magic happens. Git's staging area lets you carefully choose which changes to include in your next commit.
+
+```bash
+git status            # See modified and staged files
+git add <file>        # Stage a specific file for commit
+git add .             # Stage all changes in current directory
+git reset <file>      # Unstage a file (keeps changes in working directory)
+git diff              # View unstaged changes
+git diff --staged     # View changes between staged files and last commit
+git commit -m "msg"   # Create a new commit with a message
+```
+
+The staging area is your safety net. Use `git status` frequently to see what's about to be committed. Review staged changes with `git diff --staged` before committing to catch any mistakes.
+
+## Branching and merging
+
+Branches are Git's killer feature. They let you work on new features or bug fixes without affecting the main codebase.
+
+```bash
+git branch            # List all local branches
+git branch -M main    # Rename current branch to main
+git branch <name>     # Create a new branch
+git checkout <name>   # Switch to a different branch
+git checkout -b <name> # Create and switch to new branch in one command
+git merge <branch>    # Merge specified branch into current branch
+git branch -d <name>  # Delete a branch (safe delete)
+git branch -D <name>  # Force delete a branch
+```
+
+**Best practice:** Always branch from `main` or your primary development branch. Keep branches small and focused on a single feature or fix. Open pull requests early to get feedback while you work.
+
+## Inspecting history and comparing changes
+
+Understanding your project's history is crucial. These commands help you navigate commits and see what changed.
+
+```bash
+git log                      # View commit history
+git log --oneline            # Compact one-line format
+git log --graph              # Visual branch structure
+git log branchB..branchA     # Commits on branchA not in branchB
+git log --follow <file>      # History for file, even across renames
+git diff branchB...branchA   # Changes in branchA not in branchB
+git show <SHA>               # Display details of a specific commit
+```
+
+The `git log` command has countless options. Combine them for powerful queries like `git log --oneline --graph --all` to see your entire project structure at a glance.
+
+## Managing files and paths
+
+Git tracks file moves and deletions. Use these commands instead of your file manager to keep Git aware of changes.
+
+```bash
+git rm <file>                # Remove file and stage the deletion
+git mv <old> <new>           # Move or rename file and stage the change
+```
+
+When you use `git mv`, Git understands that the file was renamed, not deleted and recreated. Use `git log --stat -M` to see rename history clearly.
+
+## Ignoring files
+
+Not everything belongs in version control. Build artifacts, dependencies, environment files, and personal IDE settings should be ignored.
+
+Create a `.gitignore` file in your project root:
+
+```
+# Example .gitignore
+node_modules/
+.env.local
+.env
+dist/
+build/
+*.log
+.DS_Store
+```
+
+For files you want to ignore across all projects on your machine, set up a global ignore file:
+
+```bash
+git config --global core.excludesfile ~/.gitignore_global
+```
+
+## Working with remotes
+
+Collaboration happens through remote repositories like GitHub, GitLab, or Bitbucket.
+
+```bash
+git remote add <alias> <url>  # Add a remote repository
+git remote -v                 # View configured remotes
+git fetch <alias>             # Download remote changes without merging
+git merge <alias>/<branch>    # Merge a remote branch into current branch
+git push <alias> <branch>     # Upload commits to remote
+git push -u <alias> <branch>  # Push and set upstream tracking
+git pull                      # Fetch and merge from tracking remote
+```
+
+The `-u` flag in `git push -u origin main` sets up tracking so future pushes and pulls don't need the branch name specified.
+
+## Rewriting history (use with caution)
+
+Sometimes you need to clean up commits before sharing them. These commands rewrite history, so use them carefully.
+
+```bash
+git rebase <branch>           # Replay commits on top of another branch
+git rebase -i <commit>        # Interactive rebase for editing commits
+git reset --hard <commit>     # Reset to a commit, discarding all changes
+git commit --amend            # Modify the most recent commit
+```
+
+**Golden rule:** Never rewrite commits that have been pushed to a shared branch like `main`. Only rebase local or feature branches before merging. Rewriting shared history causes confusion and merge conflicts for your team.
+
+## Stashing changes temporarily
+
+Need to switch branches but have uncommitted work? Stash it.
+
+```bash
+git stash                # Save changes to a stack
+git stash list           # Show all saved stashes
+git stash pop            # Re-apply top stash and remove it from stack
+git stash apply          # Re-apply top stash but keep it in stack
+git stash drop           # Remove the top stash
+git stash clear          # Remove all stashes
+```
+
+Stashing is perfect when you need to quickly switch contexts without committing half-finished work.
+
+## Quick workflow for new projects
+
+Here's the fastest way to get a new project under version control and pushed to a remote repository:
+
+```bash
+# Initialize repository
+git init
+
+# Stage all files
+git add .
+
+# Create first commit
+git commit -m "feat: initial commit"
+
+# Add remote repository
+git remote add origin <repository-url>
+
+# Push to remote and set upstream
+git push -u origin main
+```
+
+This workflow gets you from zero to version-controlled in seconds.
+
+## Commands you'll use every day
+
+These are the bread and butter commands you'll reach for constantly:
+
+- `git status` – Check what's changed
+- `git add .` – Stage all changes
+- `git commit -m "message"` – Save changes with a description
+- `git push origin <branch>` – Upload commits to remote
+- `git pull` – Download and merge remote changes
+- `git log` – View commit history
+- `git checkout <branch>` – Switch branches
+- `git restore <file>` – Discard changes to a file
+
+## Wrapping up
+
+Git is powerful, but you don't need to memorize every command. Focus on the basics, use this cheat sheet when you need a reference, and you'll naturally pick up more advanced techniques as you go.
+
+Remember: commit often, write clear messages, and don't be afraid to branch. Git is there to help you experiment safely and collaborate effectively.
+
+Happy coding!
