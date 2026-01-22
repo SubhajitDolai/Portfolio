@@ -17,17 +17,111 @@ const BLUR_FADE_DELAY = 0.04;
 
 const structuredData = {
   "@context": "https://schema.org",
-  "@type": "WebPage",
+  "@type": "WebSite",
   "name": "Subhajit Dolai Portfolio",
-  "description": "Explore the professional portfolio of Subhajit Dolai, showcasing expertise in modern web technologies.",
-  "url": "https://subhajit-dolai.vercel.app/",
-  "image": "https://subhajit-dolai.vercel.app/opengraph-image",
+  "url": "https://www.subhajitdolai.dev/",
+  "description": "Welcome to the professional portfolio of Subhajit Dolai, a full-stack developer specializing in Next.js, React, TypeScript, Supabase and modern web technologies.",
+  "publisher": {
+    "@type": "Person",
+    "name": "Subhajit Dolai",
+    "url": "https://www.subhajitdolai.dev/"
+  },
+  "image": "https://www.subhajitdolai.dev/opengraph-image"
+};
+
+const breadcrumbLd = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": {
+        "@type": "WebSite",
+        "name": "Subhajit Dolai Portfolio",
+        "url": "https://www.subhajitdolai.dev/"
+      }
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "About",
+      "item": {
+        "@type": "WebSite",
+        "name": "Subhajit Dolai Portfolio",
+        "url": "https://www.subhajitdolai.dev/"
+      }
+    },
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "Work Experience",
+      "item": {
+        "@type": "WebSite",
+        "name": "Subhajit Dolai Portfolio",
+        "url": "https://www.subhajitdolai.dev/"
+      }
+    },
+    {
+      "@type": "ListItem",
+      "position": 4,
+      "name": "Education",
+      "item": {
+        "@type": "WebSite",
+        "name": "Subhajit Dolai Portfolio",
+        "url": "https://www.subhajitdolai.dev/"
+      }
+    },
+    {
+      "@type": "ListItem",
+      "position": 5,
+      "name": "Skills",
+      "item": {
+        "@type": "WebSite",
+        "name": "Subhajit Dolai Portfolio",
+        "url": "https://www.subhajitdolai.dev/"
+      }
+    },
+    {
+      "@type": "ListItem",
+      "position": 6,
+      "name": "Projects",
+      "item": {
+        "@type": "WebSite",
+        "name": "Subhajit Dolai Portfolio",
+        "url": "https://www.subhajitdolai.dev/"
+      }
+    },
+    {
+      "@type": "ListItem",
+      "position": 7,
+      "name": "Hackathons",
+      "item": {
+        "@type": "WebSite",
+        "name": "Subhajit Dolai Portfolio",
+        "url": "https://www.subhajitdolai.dev/"
+      }
+    },
+    {
+      "@type": "ListItem",
+      "position": 8,
+      "name": "Contact",
+      "item": {
+        "@type": "WebSite",
+        "name": "Subhajit Dolai Portfolio",
+        "url": "https://www.subhajitdolai.dev/"
+      }
+    }
+  ]
 };
 
 export const metadata = generateSEO({
   title: "Home",
-  description: "Welcome to the professional portfolio of Subhajit Dolai, showcasing expertise in modern web technologies.",
-  keywords: ["portfolio", "Subhajit Dolai", "web development", "Next.js", "React", "Full Stack Developer"],
+  description: "Welcome to the professional portfolio of Subhajit Dolai, a full-stack developer specializing in Next.js, React, TypeScript, Supabase and modern web technologies. Explore projects, blog posts, and resume.",
+  keywords: [
+    "Portfolio", "Subhajit Dolai", "Web Development", "Next.js", "React", "Full Stack Developer", "TypeScript", "Supabase", "Software Engineer", "Frontend Developer", "Backend Developer", "Projects", "Blog", "Resume", "Open Source", "UI/UX", "Cloud", "JavaScript", "Personal Website"
+  ],
   url: "/",
 });
 
@@ -186,6 +280,7 @@ export default function Page() {
         </BlurFade>
       </section>
       <JsonLd data={structuredData} />
+      <JsonLd data={breadcrumbLd} />
     </main>
   );
 }

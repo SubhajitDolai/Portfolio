@@ -49,6 +49,9 @@ export async function generateMetadata({
   return {
     title,
     description,
+    keywords: [
+      'blog', 'Subhajit Dolai', 'Web Development', 'Software Engineering', 'Next.js', 'React', 'TypeScript', 'JavaScript', 'Programming', 'Coding', 'Tutorial', 'Article', 'Personal Blog', 'Tech Blog', 'Frontend', 'Backend', 'Full Stack', 'Open Source', 'Best Practices', 'Career', 'Learning', title
+    ],
     openGraph: {
       title,
       description,
@@ -66,11 +69,14 @@ export async function generateMetadata({
       title,
       description,
       images: [ogImage],
+      creator: '@subhajitdolai',
+      site: '@subhajitdolai'
     },
     alternates: {
       canonical: `${DATA.url}/blog/${slug}`,
     },
     authors: [{ name: DATA.name }],
+    publisher: DATA.name,
   };
 }
 
@@ -100,44 +106,58 @@ export default async function Blog({
 
   const jsonLdContent = JSON.stringify({
     "@context": "https://schema.org",
-    "@type": "BlogPosting",
-    headline: post.title,
-    datePublished: post.publishedAt,
-    dateModified: post.publishedAt,
-    description: post.summary,
-    image: post.image
+    "@type": "Article",
+    "headline": post.title,
+    "datePublished": post.publishedAt,
+    "dateModified": post.updatedAt || post.publishedAt,
+    "description": post.summary,
+    "image": post.image
       ? `${DATA.url}${post.image}`
       : `${DATA.url}/blog/${slug}/opengraph-image`,
-    url: `${DATA.url}/blog/${slug}`,
-    author: {
+    "url": `${DATA.url}/blog/${slug}`,
+    "author": {
       "@type": "Person",
-      name: DATA.name,
+      "name": DATA.name,
+      "url": DATA.url,
+      "sameAs": [
+        "https://github.com/subhajitdolai",
+        "https://linkedin.com/in/subhajit-dolai"
+      ]
     },
+    "publisher": {
+      "@type": "Person",
+      "name": DATA.name,
+      "url": DATA.url
+    },
+    "mainEntityOfPage": {
+      "@type": "WebPage",
+      "@id": `${DATA.url}/blog/${slug}`
+    }
   }).replace(/</g, "\\u003c");
 
   const breadcrumbLd = JSON.stringify({
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
-    itemListElement: [
+    "itemListElement": [
       {
         "@type": "ListItem",
-        position: 1,
-        name: "Home",
-        item: DATA.url,
+        "position": 1,
+        "name": "Home",
+        "item": DATA.url,
       },
       {
         "@type": "ListItem",
-        position: 2,
-        name: "Blog",
-        item: `${DATA.url}/blog`,
+        "position": 2,
+        "name": "Blog",
+        "item": `${DATA.url}/blog`,
       },
       {
         "@type": "ListItem",
-        position: 3,
-        name: post.title,
-        item: `${DATA.url}/blog/${slug}`,
+        "position": 3,
+        "name": post.title,
+        "item": `${DATA.url}/blog/${slug}`,
       },
-    ],
+    ]
   }).replace(/</g, "\\u003c");
 
   return (

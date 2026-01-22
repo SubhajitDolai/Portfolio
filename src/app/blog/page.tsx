@@ -1,7 +1,6 @@
 import BlurFade from "@/components/magicui/blur-fade";
 import { allPosts } from "content-collections";
 import Link from "next/link";
-import type { Metadata } from "next";
 import { paginate, normalizePage } from "@/lib/pagination";
 import { ChevronRight } from "lucide-react";
 
@@ -9,9 +8,39 @@ import { generateSEO } from '@/lib/seo';
 
 export const metadata = generateSEO({
   title: 'Blog',
-  description: 'Thoughts on software development, life, and more.',
+  description: 'Read the latest blog posts by Subhajit Dolai on software development, Web technologies, Next.js, React, TypeScript, and more.',
   url: '/blog',
+  keywords: [
+    'Subhajit Dolai Blog', 'Blogs', 'Web Development', 'Software Engineering', 'Next.js', 'React', 'TypeScript', 'JavaScript', 'Programming', 'Coding', 'Tutorials', 'Articles', 'Personal Blog', 'Tech Blog', 'Frontend', 'Backend', 'Full Stack', 'Open Source', 'Best Practices', 'Career', 'Learning'
+  ],
 });
+import JsonLd from '@/components/JsonLd';
+const blogStructuredData = {
+  "@context": "https://schema.org",
+  "@type": "Blog",
+  "name": "Subhajit Dolai Blog",
+  "url": "https://www.subhajitdolai.dev/blog",
+  "description": "Read the latest blog posts by Subhajit Dolai on software development, web technologies, Next.js, React, TypeScript, and more.",
+  "publisher": {
+    "@type": "Person",
+    "name": "Subhajit Dolai",
+    "url": "https://www.subhajitdolai.dev/"
+  },
+  "sameAs": [
+    "https://github.com/subhajitdolai",
+    "https://linkedin.com/in/subhajit-dolai"
+  ],
+  "blogPost": allPosts.map(post => ({
+    "@type": "BlogPosting",
+    "headline": post.title,
+    "url": `https://www.subhajitdolai.dev/blog/${post._meta.path.replace(/\.mdx$/, "")}`,
+    "datePublished": post.publishedAt,
+    "author": {
+      "@type": "Person",
+      "name": "Subhajit Dolai"
+    }
+  }))
+};
 
 const PAGE_SIZE = 5;
 const BLUR_FADE_DELAY = 0.04;
@@ -38,12 +67,32 @@ export default async function BlogPage({
     pageSize: PAGE_SIZE,
   });
 
+  const breadcrumbLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "https://www.subhajitdolai.dev/"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Blog",
+        "item": "https://www.subhajitdolai.dev/blog"
+      }
+    ]
+  };
   return (
     <section id="blog">
+      <JsonLd data={blogStructuredData} />
+      <JsonLd data={breadcrumbLd} />
       <BlurFade delay={BLUR_FADE_DELAY}>
         <h1 className="text-2xl font-semibold tracking-tight mb-2">Blog <span className="ml-1 bg-card border border-border rounded-md px-2 py-1 text-muted-foreground text-sm">{sortedPosts.length} posts</span></h1>
         <p className="text-sm text-muted-foreground mb-8">
-          My thoughts on software development, life, and more.
+          Insights, tutorials, and thoughts on software development, web technologies, and more by Subhajit Dolai.
         </p>
       </BlurFade>
 

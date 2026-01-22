@@ -2,7 +2,7 @@ import { MetadataRoute } from 'next';
 import { allPosts } from "content-collections";
 
 export default async function Sitemap() {
-  const baseUrl = "https://subhajit-dolai.vercel.app";
+  const baseUrl = "https://www.subhajitdolai.dev";
 
   const staticPages = ["", "/blog", "/resume"].map((path) => ({
     url: `${baseUrl}${path}`,

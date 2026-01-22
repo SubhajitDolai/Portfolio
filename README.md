@@ -2,7 +2,7 @@
 
 <div align="center">
 
-[![Personal Site](https://img.shields.io/badge/Portfolio-Subhajit%20Dolai-blue)](https://subhajit-dolai.vercel.app) 
+[![Personal Site](https://img.shields.io/badge/Portfolio-Subhajit%20Dolai-blue)](https://www.subhajitdolai.dev) 
 [![License](https://img.shields.io/badge/License-Proprietary-red.svg)](LICENSE) 
 [![Next.js](https://img.shields.io/badge/Next.js-16-black)](https://nextjs.org/) 
 [![Supabase](https://img.shields.io/badge/Supabase-Database-darkgreen)](https://supabase.com/) 
@@ -11,7 +11,7 @@
 </div>
 
 <p align="center">
-  <a href="https://subhajit-dolai.vercel.app" target="_blank" rel="noopener noreferrer">
+  <a href="https://www.subhajitdolai.dev" target="_blank" rel="noopener noreferrer">
     <img src="https://img.shields.io/badge/View%20Portfolio-Visit%20site-007acc?style=for-the-badge&logo=vercel&logoColor=white" alt="Live website" />
   </a>
 </p>
@@ -50,6 +50,6 @@ This repository uses a **Proprietary License** — see `LICENSE` for full detail
 
 ## Contact
 
-- Website: https://subhajit-dolai.vercel.app
+- Website: https://www.subhajitdolai.dev
 - GitHub: https://github.com/subhajitdolai
 - LinkedIn: https://linkedin.com/in/subhajit-dolai

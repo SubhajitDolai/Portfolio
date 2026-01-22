@@ -3,9 +3,9 @@ import { Metadata } from 'next';
 export const siteConfig = {
   name: 'Portfolio of Subhajit Dolai',
   title: 'Subhajit Dolai - Full Stack Developer Portfolio',
-  description: 'Explore the portfolio of Subhajit Dolai, a full-stack developer specializing in modern web technologies, including Next.js, React, and Node.js.',
-  url: 'https://subhajit-dolai.vercel.app',
-  image: 'https://subhajit-dolai.vercel.app/opengraph-image',
+  description: 'Explore the portfolio of Subhajit Dolai, a full-stack developer specializing in modern web technologies, including Next.js, React, Supabase and Node.js.',
+  url: 'https://www.subhajitdolai.dev',
+  image: 'https://www.subhajitdolai.dev/opengraph-image',
   author: 'Subhajit Dolai',
   keywords: [
     'Subhajit Dolai',
@@ -13,6 +13,7 @@ export const siteConfig = {
     'Portfolio',
     'Next.js',
     'React',
+    'Supabase',
     'Node.js',
     'Web Development',
     'Software Engineer',

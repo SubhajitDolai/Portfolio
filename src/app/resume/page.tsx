@@ -11,29 +11,39 @@ const BLUR_FADE_DELAY = 0.04;
 
 export const metadata = generateSEO({
   title: 'Resume',
-  description: `Resume — ${DATA.name} — Full Stack Developer`,
+  description: `Resume and CV of ${DATA.name}, Full Stack Developer specializing in Next.js, React, TypeScript, Supabase, and scalable web applications. Download PDF or view online.`,
   url: '/resume',
-  keywords: ['resume', 'CV', 'Subhajit Dolai', 'Full Stack Developer', 'Next.js', 'Supabase'],
+  keywords: [
+    'resume', 'CV', 'Subhajit Dolai', 'Full Stack Developer', 'Next.js', 'Supabase', 'React', 'TypeScript', 'JavaScript', 'Software Engineer', 'Web Developer', 'Backend', 'Frontend', 'Personal Resume', 'Download Resume', 'Portfolio', 'Developer Resume', 'Subhajit Dolai Resume', 'PDF Resume', 'Hire', 'Curriculum Vitae'
+  ],
 });
 
 const resumeStructuredData = {
   '@context': 'https://schema.org',
-  '@type': 'CreativeWork',
-  name: `Resume — ${DATA.name}`,
-  creator: {
-    '@type': 'Person',
-    name: DATA.name,
-    url: DATA.url,
+  '@type': 'Person',
+  name: DATA.name,
+  url: DATA.url,
+  sameAs: [
+    'https://github.com/subhajitdolai',
+    'https://linkedin.com/in/subhajit-dolai'
+  ],
+  jobTitle: 'Full Stack Developer',
+  worksFor: {
+    '@type': 'Organization',
+    name: 'Freelance / Open Source',
   },
-  datePublished: new Date().toISOString(),
-  about: DATA.summary,
-  encoding: {
-    '@type': 'MediaObject',
-    contentUrl: `${DATA.url}/Resume.pdf`,
+  description: DATA.summary,
+  image: DATA.avatarUrl,
+  mainEntityOfPage: {
+    '@type': 'WebPage',
+    '@id': `${DATA.url}/resume`
+  },
+  hasCredential: {
+    '@type': 'CreativeWork',
+    name: `Resume — ${DATA.name}`,
+    url: `${DATA.url}/Resume.pdf`,
     encodingFormat: 'application/pdf',
-  },
-  keywords: DATA.skills.map((s: any) => s.name).join(', '),
-  url: `${DATA.url}/resume`,
+  }
 };
 
 export default function ResumePage() {

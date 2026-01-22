@@ -10,7 +10,7 @@ export default function robots(): MetadataRoute.Robots {
         crawlDelay: 1
       }
     ],
-    sitemap: 'https://subhajit-dolai.vercel.app/sitemap.xml',
-    host: 'https://subhajit-dolai.vercel.app'
+    sitemap: 'https://www.subhajitdolai.dev/sitemap.xml',
+    host: 'https://www.subhajitdolai.dev'
   };
 }
