@@ -44,6 +44,8 @@ export async function generateMetadata({
     image,
   } = post;
 
+  const ogImage = image ? `${DATA.url}${image}` : `${DATA.url}/blog/${slug}/opengraph-image`;
+
   return {
     title,
     description,
@@ -53,22 +55,22 @@ export async function generateMetadata({
       type: "article",
       publishedTime,
       url: `${DATA.url}/blog/${slug}`,
-      ...(image && {
-        images: [
-          {
-            url: `${DATA.url}${image}`,
-          },
-        ],
-      }),
+      images: [
+        {
+          url: ogImage,
+        },
+      ],
     },
     twitter: {
       card: "summary_large_image",
       title,
       description,
-      ...(image && {
-        images: [`${DATA.url}${image}`],
-      }),
+      images: [ogImage],
     },
+    alternates: {
+      canonical: `${DATA.url}/blog/${slug}`,
+    },
+    authors: [{ name: DATA.name }],
   };
 }
 
@@ -113,6 +115,31 @@ export default async function Blog({
     },
   }).replace(/</g, "\\u003c");
 
+  const breadcrumbLd = JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: "Home",
+        item: DATA.url,
+      },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: "Blog",
+        item: `${DATA.url}/blog`,
+      },
+      {
+        "@type": "ListItem",
+        position: 3,
+        name: post.title,
+        item: `${DATA.url}/blog/${slug}`,
+      },
+    ],
+  }).replace(/</g, "\\u003c");
+
   return (
     <section id="blog">
       <script
@@ -120,6 +147,13 @@ export default async function Blog({
         suppressHydrationWarning
         dangerouslySetInnerHTML={{
           __html: jsonLdContent,
+        }}
+      />
+      <script
+        type="application/ld+json"
+        suppressHydrationWarning
+        dangerouslySetInnerHTML={{
+          __html: breadcrumbLd,
         }}
       />
       <div className="flex justify-start gap-4 items-center">

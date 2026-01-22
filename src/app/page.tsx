@@ -10,8 +10,26 @@ import HackathonsSection from "@/components/section/hackathons-section";
 import ProjectsSection from "@/components/section/projects-section";
 import WorkSection from "@/components/section/work-section";
 import { ArrowUpRight } from "lucide-react";
+import { generateSEO } from '@/lib/seo';
+import JsonLd from '@/components/JsonLd';
 
 const BLUR_FADE_DELAY = 0.04;
+
+const structuredData = {
+  "@context": "https://schema.org",
+  "@type": "WebPage",
+  "name": "Subhajit Dolai Portfolio",
+  "description": "Explore the professional portfolio of Subhajit Dolai, showcasing expertise in modern web technologies.",
+  "url": "https://subhajit-dolai.vercel.app/",
+  "image": "https://subhajit-dolai.vercel.app/opengraph-image",
+};
+
+export const metadata = generateSEO({
+  title: "Home",
+  description: "Welcome to the professional portfolio of Subhajit Dolai, showcasing expertise in modern web technologies.",
+  keywords: ["portfolio", "Subhajit Dolai", "web development", "Next.js", "React", "Full Stack Developer"],
+  url: "/",
+});
 
 export default function Page() {
   return (
@@ -167,6 +185,7 @@ export default function Page() {
           <ContactSection />
         </BlurFade>
       </section>
+      <JsonLd data={structuredData} />
     </main>
   );
 }
