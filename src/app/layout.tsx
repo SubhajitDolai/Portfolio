@@ -7,6 +7,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { FlickeringGrid } from "@/components/magicui/flickering-grid";
+import { Analytics } from '@vercel/analytics/next';
 
 const geist = Geist({
   subsets: ["latin"],
@@ -85,6 +86,7 @@ export default function RootLayout({
             </div>
             <div className="relative z-10 max-w-2xl mx-auto py-12 pb-24 sm:py-24 px-6">
               {children}
+              <Analytics />
             </div>
             <Navbar />
           </TooltipProvider>

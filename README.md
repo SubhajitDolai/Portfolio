@@ -1,47 +1,55 @@
+# Subhajit Dolai — Portfolio
+
 <div align="center">
-<img alt="Portfolio" src="https://github.com/dillionverma/portfolio/assets/16860528/57ffca81-3f0a-4425-b31d-094f61725455" width="90%">
+
+[![Personal Site](https://img.shields.io/badge/Portfolio-Subhajit%20Dolai-blue)](https://subhajit-dolai.vercel.app) 
+[![License](https://img.shields.io/badge/License-Proprietary-red.svg)](LICENSE) 
+[![Next.js](https://img.shields.io/badge/Next.js-16-black)](https://nextjs.org/) 
+[![Supabase](https://img.shields.io/badge/Supabase-Database-darkgreen)](https://supabase.com/) 
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.x-blue)](https://www.typescriptlang.org/)
+
 </div>
 
-# Portfolio [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fdillionverma%2Fportfolio)
+<p align="center">
+  <a href="https://subhajit-dolai.vercel.app" target="_blank" rel="noopener noreferrer">
+    <img src="https://img.shields.io/badge/View%20Portfolio-Visit%20site-007acc?style=for-the-badge&logo=vercel&logoColor=white" alt="Live website" />
+  </a>
+</p>
 
-Built with next.js, [shadcn/ui](https://ui.shadcn.com/), and [magic ui](https://magicui.design/), deployed on Vercel.
+A performance-first portfolio built with Next.js, showcasing production apps, accessible UI, and modern full‑stack patterns.
 
-# Features
+---
 
-- Setup only takes a few minutes by editing the [single config file](./src/data/resume.tsx)
-- Built using Next.js 14, React, Typescript, Shadcn/UI, TailwindCSS, Framer Motion, Magic UI
-- Includes a blog
-- Responsive for different devices
-- Optimized for Next.js and Vercel
+## About
 
-# Getting Started Locally
+This repository contains my personal portfolio website built with Next.js. It highlights selected projects and the key technologies used.
 
-1. Clone this repository to your local machine:
+- Architecture: Next.js (App Router) with a combination of server and client components.
+- Backend: Supabase for storage.
+- Types & Validation: TypeScript with Zod for runtime checks.
+- Styling: Tailwind CSS and shadcn/ui for consistent, accessible components.
+- Media: Images optimized using Next.js and videos served via CDN/Supabase Storage with poster images.
+- Deployment: Hosted on Vercel with preview deployments and CI checks for deployments.
 
-   ```bash
-   git clone https://github.com/dillionverma/portfolio
-   ```
+---
 
-2. Move to the cloned directory
+## Featured Projects
 
-   ```bash
-   cd portfolio
-   ```
+- **Courtside** — AI-powered sports facility booking. [Live demo](https://sports.mitwpu.edu.in) · Built with Next.js & Supabase; focused on accessibility and fast scheduling.
+- **CampusBook** — University resource booking and scheduling. [Live demo](https://infra.mitwpu.edu.in) · Room & asset management for campus operations.
+- **RISE Enterprises** — Production marketing website for a construction firm. [Website](https://www.rise-enterprises.co.in) · Responsive portfolio, gallery and contact/quote forms.
+- **DiscussZone** — Library automation & discussion room booking. Prototype for streamlining library resources and group reservations.
 
-3. Install dependencies:
+---
 
-   ```bash
-   pnpm install
-   ```
+## License
 
-4. Start the local Server:
+This repository uses a **Proprietary License** — see `LICENSE` for full details.
 
-   ```bash
-   pnpm dev
-   ```
+---
 
-5. Open the [Config file](./src/data/resume.tsx) and make changes
+## Contact
 
-# License
-
-Licensed under the [MIT license](https://github.com/dillionverma/portfolio/blob/main/LICENSE.md).
+- Website: https://subhajit-dolai.vercel.app
+- GitHub: https://github.com/subhajitdolai
+- LinkedIn: https://linkedin.com/in/subhajit-dolai

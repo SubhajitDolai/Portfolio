@@ -15,7 +15,7 @@ import { Csharp } from "@/components/ui/svgs/csharp";
 export const DATA = {
   name: "Subhajit Dolai",
   initials: "SD",
-  url: "https://subhajitdolai.dev",
+  url: "https://subhajit-dolai.vercel.app",
   location: "Pune, India",
   locationLink: "https://www.google.com/maps/place/Pune",
   description:
