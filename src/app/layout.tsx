@@ -97,9 +97,6 @@ export const metadata: Metadata = {
     description: DATA.description,
     images: [`${DATA.url}/opengraph-image`],
   },
-  verification: {
-    google: process.env.GOOGLE_SITE_VERIFICATION,
-  },
 };
 
 export default function RootLayout({

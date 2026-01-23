@@ -1,9 +1,9 @@
-/* eslint-disable @next/next/no-img-element */
 import BlurFade from "@/components/magicui/blur-fade";
 import BlurFadeText from "@/components/magicui/blur-fade-text";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { DATA } from "@/data/resume";
 import Link from "next/link";
+import Image from "next/image";
 import Markdown from "react-markdown";
 import ContactSection from "@/components/section/contact-section";
 import HackathonsSection from "@/components/section/hackathons-section";
@@ -196,11 +196,9 @@ export default function Page() {
                 >
                   <div className="flex items-center gap-x-3 flex-1 min-w-0">
                     {education.logoUrl ? (
-                      <img
-                        src={education.logoUrl}
-                        alt={education.school}
-                        className="size-8 md:size-10 p-1 border rounded-full shadow ring-2 ring-border overflow-hidden object-contain flex-none"
-                      />
+                      <div className="relative size-8 md:size-10 p-1 border rounded-full shadow ring-2 ring-border overflow-hidden flex-none">
+                        <Image src={education.logoUrl} alt={education.school} width={40} height={40} className="object-contain" />
+                      </div>
                     ) : (
                       <div className="size-8 md:size-10 p-1 border rounded-full shadow ring-2 ring-border bg-muted flex-none" />
                     )}
@@ -239,7 +237,9 @@ export default function Page() {
                   <div className="border bg-background border-border ring-2 ring-border/20 rounded-xl h-8 w-fit px-4 flex items-center gap-2">
                     {icon ? (
                       typeof icon === "string" ? (
-                        <img src={icon} alt={skill.name} className="size-4 rounded overflow-hidden object-contain" />
+                        <div className="relative size-4 rounded overflow-hidden">
+                          <Image src={icon} alt={skill.name} fill className="object-contain" />
+                        </div>
                       ) : (
                         // `icon` is a component; render it as a proper component
                         (() => {
@@ -248,11 +248,9 @@ export default function Page() {
                         })()
                       )
                     ) : (
-                      <img
-                        src={fileSrc}
-                        alt={skill.name}
-                        className="size-4 rounded overflow-hidden object-contain"
-                      />
+                      <div className="relative size-4 rounded overflow-hidden">
+                        <Image src={fileSrc} alt={skill.name} fill className="object-contain" />
+                      </div>
                     )}
                     <span className="text-foreground text-sm font-medium">{skill.name}</span>
                   </div>
