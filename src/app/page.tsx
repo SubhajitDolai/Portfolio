@@ -29,91 +29,34 @@ const structuredData = {
   "image": "https://www.subhajitdolai.dev/opengraph-image"
 };
 
+const BASE = 'https://www.subhajitdolai.dev';
+const SECTIONS = [
+  { id: '', name: 'Home', type: 'WebSite', url: `${BASE}/` },
+  { id: 'about', name: 'About', type: 'WebPage', url: `${BASE}/#about` },
+  { id: 'work', name: 'Work Experience', type: 'WebPage', url: `${BASE}/#work` },
+  { id: 'education', name: 'Education', type: 'WebPage', url: `${BASE}/#education` },
+  { id: 'skills', name: 'Skills', type: 'WebPage', url: `${BASE}/#skills` },
+  { id: 'projects', name: 'Projects', type: 'WebPage', url: `${BASE}/#projects` },
+  // Include Hackathons only if present in the data
+  ...(DATA.hackathons && DATA.hackathons.length > 0 ? [{ id: 'hackathons', name: 'Hackathons', type: 'WebPage', url: `${BASE}/#hackathons` }] : []),
+  { id: 'contact', name: 'Contact', type: 'WebPage', url: `${BASE}/#contact` }
+];
+
 const breadcrumbLd = {
   "@context": "https://schema.org",
   "@type": "BreadcrumbList",
-  "itemListElement": [
-    {
-      "@type": "ListItem",
-      "position": 1,
-      "name": "Home",
-      "item": {
-        "@type": "WebSite",
-        "name": "Subhajit Dolai Portfolio",
-        "url": "https://www.subhajitdolai.dev/"
-      }
-    },
-    {
-      "@type": "ListItem",
-      "position": 2,
-      "name": "About",
-      "item": {
-        "@type": "WebSite",
-        "name": "Subhajit Dolai Portfolio",
-        "url": "https://www.subhajitdolai.dev/"
-      }
-    },
-    {
-      "@type": "ListItem",
-      "position": 3,
-      "name": "Work Experience",
-      "item": {
-        "@type": "WebSite",
-        "name": "Subhajit Dolai Portfolio",
-        "url": "https://www.subhajitdolai.dev/"
-      }
-    },
-    {
-      "@type": "ListItem",
-      "position": 4,
-      "name": "Education",
-      "item": {
-        "@type": "WebSite",
-        "name": "Subhajit Dolai Portfolio",
-        "url": "https://www.subhajitdolai.dev/"
-      }
-    },
-    {
-      "@type": "ListItem",
-      "position": 5,
-      "name": "Skills",
-      "item": {
-        "@type": "WebSite",
-        "name": "Subhajit Dolai Portfolio",
-        "url": "https://www.subhajitdolai.dev/"
-      }
-    },
-    {
-      "@type": "ListItem",
-      "position": 6,
-      "name": "Projects",
-      "item": {
-        "@type": "WebSite",
-        "name": "Subhajit Dolai Portfolio",
-        "url": "https://www.subhajitdolai.dev/"
-      }
-    },
-    {
-      "@type": "ListItem",
-      "position": 7,
-      "name": "Hackathons",
-      "item": {
-        "@type": "WebSite",
-        "name": "Subhajit Dolai Portfolio",
-        "url": "https://www.subhajitdolai.dev/"
-      }
-    },
-    {
-      "@type": "ListItem",
-      "position": 8,
-      "name": "Contact",
-      "item": {
-        "@type": "WebSite",
-        "name": "Subhajit Dolai Portfolio",
-        "url": "https://www.subhajitdolai.dev/"
-      }
+  itemListElement: SECTIONS.map((s, i) => ({
+    "@type": "ListItem",
+    position: i + 1,
+    name: s.name,
+    item: {
+      "@type": s.type,
+      name: `Subhajit Dolai Portfolio${s.name !== 'Home' ? ` - ${s.name}` : ''}`,
+      url: s.url,
+      "@id": s.url,
+      id: s.url
     }
-  ]
+  }))
 };
 
 export const metadata = generateSEO({
