@@ -12,6 +12,7 @@ import WorkSection from "@/components/section/work-section";
 import { ArrowUpRight } from "lucide-react";
 import { generateSEO } from '@/lib/seo';
 import JsonLd from '@/components/JsonLd';
+import FirstLoadLoader from "@/components/first-load-loader";
 
 const BLUR_FADE_DELAY = 0.04;
 
@@ -71,6 +72,7 @@ export const metadata = generateSEO({
 export default function Page() {
   return (
     <main className="min-h-dvh flex flex-col gap-14 relative">
+      <FirstLoadLoader />
       <section id="hero">
         <div className="mx-auto w-full max-w-2xl space-y-8">
           <div className="gap-2 gap-y-6 flex flex-col md:flex-row justify-between">
