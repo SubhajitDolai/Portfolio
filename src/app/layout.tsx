@@ -25,6 +25,23 @@ const geistMono = Geist_Mono({
 const siteStructuredData = [
   {
     "@context": "https://schema.org",
+    "@type": "Organization",
+    name: "Subhajit Dolai Portfolio",
+    url: "https://www.subhajitdolai.dev",
+    logo: "https://www.subhajitdolai.dev/me.webp",
+    founder: {
+      "@type": "Person",
+      name: DATA.name,
+      url: DATA.url,
+    },
+    sameAs: [
+      "https://github.com/subhajitdolai",
+      "https://linkedin.com/in/subhajit-dolai"
+    ],
+    description: DATA.description,
+  },
+  {
+    "@context": "https://schema.org",
     "@type": "Person",
     name: DATA.name,
     url: DATA.url,

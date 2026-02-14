@@ -3,10 +3,22 @@ import { Metadata } from 'next';
 export const siteConfig = {
   name: 'Portfolio of Subhajit Dolai',
   title: 'Subhajit Dolai - Full Stack Developer Portfolio',
-  description: 'Explore the portfolio of Subhajit Dolai, a full-stack developer specializing in modern web technologies, including Next.js, React, Supabase and Node.js.',
+  description: 'Explore the portfolio of Subhajit Dolai, a full-stack developer specializing in modern web technologies, including Next.js, React, Supabase, and Node.js.',
   url: 'https://www.subhajitdolai.dev',
   image: 'https://www.subhajitdolai.dev/opengraph-image',
   author: 'Subhajit Dolai',
+  publisher: {
+    name: 'Subhajit Dolai',
+    url: 'https://www.subhajitdolai.dev',
+    logo: '/me.webp',
+    type: 'Person',
+  },
+  organization: {
+    name: 'Subhajit Dolai Portfolio',
+    url: 'https://www.subhajitdolai.dev',
+    logo: '/me.webp',
+    type: 'Organization',
+  },
   keywords: [
     'Subhajit Dolai',
     'Full Stack Developer',
@@ -18,7 +30,16 @@ export const siteConfig = {
     'Web Development',
     'Software Engineer',
     'Frontend Developer',
-    'Backend Developer'
+    'Backend Developer',
+    'JavaScript Tutorials',
+    'TypeScript Guides',
+    'Open Source Projects',
+    'Web Application Development',
+    'Scalable Web Apps',
+    'Tech Blog',
+    'Programming Tips',
+    'Coding Best Practices',
+    'Modern Web Technologies'
   ]
 };
 
@@ -51,7 +72,6 @@ export function generateSEO({
     keywords: allKeywords,
     authors: [{ name: siteConfig.author }],
     creator: siteConfig.author,
-    publisher: siteConfig.author,
     robots: noIndex ? 'noindex, nofollow' : 'index, follow',
     alternates: { canonical: seoUrl },
     openGraph: {
@@ -68,7 +88,7 @@ export function generateSEO({
           height: 630,
           alt: seoTitle
         }
-      ]
+      ],
     },
     twitter: {
       card: 'summary_large_image',
@@ -79,4 +99,4 @@ export function generateSEO({
       site: '@subhajitdolai'
     }
   };
-} 
+}

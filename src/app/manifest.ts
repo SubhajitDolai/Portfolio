@@ -3,8 +3,8 @@ import { MetadataRoute } from 'next';
 export default function manifest(): MetadataRoute.Manifest {
   return {
     name: 'Subhajit Dolai Portfolio',
-    short_name: 'Portfolio',
-    description: 'Explore the portfolio of Subhajit Dolai, showcasing expertise in modern web technologies.',
+    short_name: 'Subhajit Dolai',
+    description: 'Portfolio and CV of Subhajit Dolai, Full Stack Developer specializing in Next.js, React, TypeScript, Supabase, and scalable web applications.',
     start_url: '/',
     display: 'standalone',
     background_color: '#ffffff',
@@ -12,12 +12,12 @@ export default function manifest(): MetadataRoute.Manifest {
     orientation: 'portrait',
     scope: '/',
     lang: 'en',
-    categories: ['portfolio', 'web development', 'software engineering'],
+    categories: ['portfolio', 'web development', 'software engineering', 'personal brand', 'resume'],
     icons: [
       {
-        src: '/icons/icon-192x192.png',
+        src: '/me.webp',
         sizes: '192x192',
-        type: 'image/png'
+        type: 'image/webp'
       },
       {
         src: '/icons/icon-512x512.png',
