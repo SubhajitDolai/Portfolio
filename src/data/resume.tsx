@@ -103,7 +103,7 @@ export const DATA = {
     {
       title: "Courtside — AI Sports Facility Automation System",
       href: "https://sports.mitwpu.edu.in/",
-      dates: "May 2025 - Aug 2025",
+      dates: "May 2025 - Present",
       active: true,
       description:
         "Courtside is a modern, enterprise-grade platform that streamlines booking, attendance, and administration for shared sports facilities in educational institutions. It provides intuitive booking flows, live availability updates, QR check‑in/out, role‑based admin controls, and an AI assistant for intelligent booking suggestions, all designed to scale for tens of thousands of users and run in production.",
@@ -130,7 +130,7 @@ export const DATA = {
     {
       title: "CampusBook — University Resource Booking System",
       href: "https://infra.mitwpu.edu.in/",
-      dates: "Aug 2025 - Dec 2025",
+      dates: "Aug 2025 - Present",
       active: true,
       description:
         "CampusBook is a modern, enterprise-grade platform that streamlines campus resource booking and administration (classrooms, labs, halls) with intuitive booking flows, real‑time availability, multi‑day & recurring reservations, approval workflows, role‑based admin controls, and personal calendar views, built to scale for educational institutions.",
