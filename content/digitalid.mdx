@@ -1,0 +1,357 @@
+---
+title: "Building Digital ID: How I Replaced Paper Visiting Cards with a Living Digital Identity"
+publishedAt: "2026-03-08"
+author: "Subhajit Dolai"
+summary: "The complete story of designing and building Digital ID for MIT World Peace University — a production system that replaces physical visiting cards with secure, always-up-to-date digital profiles featuring 3D flip cards, QR codes, vCard downloads, and a full admin panel."
+image: "https://images.unsplash.com/photo-1614064641938-3bbee52942c7?w=800&h=192&fit=crop"
+keywords: ["Digital Visiting Card", "Full-Stack Development", "Next.js", "Supabase", "QR Code", "vCard", "3D Card", "Educational Institutions", "Sustainability", "Software Development", "Case Study"]
+structuredData:
+  "@context": "https://schema.org"
+  "@type": "BlogPosting"
+  "headline": "Building Digital ID: How I Replaced Paper Visiting Cards with a Living Digital Identity"
+  "datePublished": "2026-03-08"
+  "author": {
+    "@type": "Person",
+    "name": "Subhajit Dolai"
+  }
+  "image": "https://images.unsplash.com/photo-1614064641938-3bbee52942c7?w=800&h=192&fit=crop"
+  "publisher": {
+    "@type": "Person",
+    "name": "Subhajit Dolai",
+    "url": "https://www.subhajitdolai.dev"
+  }
+  "description": "The complete story of designing and building Digital ID for MIT World Peace University — a production system that replaces physical visiting cards with secure, always-up-to-date digital profiles featuring 3D flip cards, QR codes, vCard downloads, and a full admin panel."
+---
+
+Every year, thousands of physical visiting cards are printed, handed out, and eventually discarded. When details change — a new phone number, a new department, a new designation — the entire card becomes obsolete. The solution is a reprint, more plastic, more waste, and more administrative overhead.
+
+I built Digital ID to fix this problem at MIT World Peace University. What started as a conversation with the Registrar's office about sustainability turned into a full production system that every employee at MIT-WPU now uses as their digital identity — a living card that lives in their pocket, accessible to anyone by scanning a QR code, and updatable in seconds without reprinting a single piece of paper.
+
+This is the story of how I built it, the technical decisions I made, and the lessons I learned along the way.
+
+## The problem with paper
+
+Physical visiting cards have a fundamental design flaw: they're static. The moment they're printed, they begin to age. A phone number changes? The card is wrong. Someone switches departments? Wrong. A promotion happens? Wrong designation forever.
+
+At an institution the size of MIT-WPU, this creates compounding problems:
+
+**For employees:**
+- Cards become outdated quickly — promotions, department changes, and phone updates are frequent
+- Lost cards require reprints — a manual, time-consuming process through HR
+- Cards can't be shared digitally — impossible to send your details to someone you met on a video call
+- No way to link to a website, lab page, or LinkedIn profile
+
+**For the institution:**
+- Printing and laminating cards at scale has a real environmental cost
+- Each batch reprint requires coordination between employees, HR, and external vendors
+- No central visibility into whose details are current and whose aren't
+- Physical cards mean zero analytics — the institution can't know if a card was ever even used
+
+The Registrar's office had started asking the right question: why are we still doing this with paper?
+
+## The vision: a living digital identity
+
+Before writing a single line of code, I spent time thinking about what "digital visiting card" actually means at institutional scale. A bad solution would be: a PDF version of a physical card that employees email to people. That's not better — it's just a different format of the same static problem.
+
+The right solution needed to be:
+
+1. **Always current** — when an employee updates their details, everyone who has their link instantly sees the latest version
+2. **Universally accessible** — someone who receives the QR code shouldn't need to install an app or create an account
+3. **Professionally designed** — it has to look better than a physical card, not just "good enough"
+4. **Employee-controlled** — privacy matters; employees should choose when their card is public
+5. **Administrator-manageable** — the Registrar's office needs to be able to manage accounts, update information, and deactivate cards
+
+That vision shaped every technical decision that followed.
+
+## The tech stack: choosing the right tools
+
+### Next.js 16: App Router as the backbone
+
+This was an easy decision. The App Router architecture with Server Components meant most data fetching happens on the server — the public card page at `/card/[id]` renders fully server-side, which means it's fast, SEO-friendly, and works immediately even on slow mobile connections.
+
+The route structure mapped naturally to the product's needs:
+
+```
+app/
+  (auth)/           → Login, signup, onboarding, password flows
+  (main)/           → Authenticated employee pages
+  admin/            → Role-gated admin panel
+  card/[id]/        → Public-facing visiting card (no auth)
+```
+
+Route groups kept auth pages visually separate from the main app without polluting the URL. The `card/[id]` route is completely public and sits outside both groups — middleware whitelists it specifically so unauthenticated visitors can always view a shared card.
+
+### Supabase: backend without the boilerplate
+
+Supabase handled every piece of the backend: PostgreSQL for the database, Auth for authentication, and Storage for avatar uploads. For a solo developer building a production system, this combination is unbeatable.
+
+The most powerful feature was Row Level Security. Instead of writing authorization checks scattered across API routes, I encoded them directly in the database:
+
+```sql
+-- Employees can only read and update their own profile
+CREATE POLICY "Users can view own profile" ON profiles
+  FOR SELECT USING (auth.uid() = id);
+
+CREATE POLICY "Users can update own profile" ON profiles
+  FOR UPDATE USING (auth.uid() = id);
+
+-- Public card page: only show profiles that are public AND active
+CREATE POLICY "Public can view public active profiles" ON profiles
+  FOR SELECT USING (is_public = true AND is_active = true);
+```
+
+The double guard on the public policy — `is_public AND is_active` — is critical. An admin can deactivate an employee's card instantly, and the RLS policy ensures the database itself enforces that deactivation. No way to bypass it from the client.
+
+### TypeScript with Zod: correctness by construction
+
+With a system used by real employees at a real institution, production errors are not acceptable. TypeScript caught entire classes of bugs at compile time. Zod validated every form submission at runtime, so malformed data never reaches the database.
+
+Profile updates go through a Zod schema before any database write:
+
+```typescript
+const profileSchema = z.object({
+  full_name: z.string().min(1, "Name is required").max(100),
+  designation: z.string().min(1, "Designation is required").max(100),
+  department: z.string().min(1, "Department is required").max(100),
+  email: z.string().email("Invalid email address"),
+  phone: z.string().regex(/^\+?[\d\s\-]{7,15}$/, "Invalid phone number").optional(),
+  website: z.string().url("Invalid URL").optional().or(z.literal("")),
+});
+```
+
+Any input that doesn't match gets rejected with a specific, human-readable error before it ever touches the database. This is especially important for public-facing forms where you can't control what gets submitted.
+
+## Core features: building the card system
+
+### The 3D flip card: first impressions matter
+
+The centerpiece of the product is the visiting card itself. I wanted it to feel premium — not like a web page displaying some text, but like an actual card you pick up and turn over.
+
+I built a CSS 3D flip animation using `perspective` and `rotateY` transforms entirely without WebGL or Three.js for the card itself. This keeps it lightweight and performant on any device:
+
+```tsx
+<div
+  className="card-container"
+  style={{ perspective: "1000px" }}
+  onClick={() => setIsFlipped(!isFlipped)}
+>
+  <div
+    className="card-inner transition-transform duration-700"
+    style={{
+      transformStyle: "preserve-3d",
+      transform: isFlipped ? "rotateY(180deg)" : "rotateY(0deg)",
+    }}
+  >
+    {/* Front: name, designation, photo */}
+    <div className="card-face card-front" style={{ backfaceVisibility: "hidden" }}>
+      <UserAvatar src={profile.avatar_url} name={profile.full_name} />
+      <h1>{profile.full_name}</h1>
+      <p>{profile.designation}</p>
+    </div>
+
+    {/* Back: contact details */}
+    <div
+      className="card-face card-back"
+      style={{ backfaceVisibility: "hidden", transform: "rotateY(180deg)" }}
+    >
+      <ContactDetails profile={profile} />
+    </div>
+  </div>
+</div>
+```
+
+The result is a smooth, 60fps flip animation that works on every browser and every device. Tap to see contact details, tap again to flip back. No library needed.
+
+### The 3D lanyard: a signature visual
+
+For the public card page, I wanted something visually distinctive — something that would make people pause when they first see it. I built a physics-based 3D lanyard using `@react-three/fiber`, `@react-three/drei`, and `@react-three/rapier`.
+
+The lanyard hangs from the top of the screen with the card dangling from it, reacting to gravity and small mouse/touch movements. It's purely aesthetic — but aesthetics matter when you're trying to make a digital card feel as real as a physical one. The card still flips on click, and all the contact actions remain accessible below.
+
+The original inspiration for this came from Vercel's own exploration of the concept — their post [Building an Interactive 3D Event Badge with React Three Fiber](https://vercel.com/blog/building-an-interactive-3d-event-badge-with-react-three-fiber) is an excellent deep dive into the same problem space. I adapted the physics lanyard approach for Digital ID's use case, tuning the rope segment count, stiffness, and gravity to feel like a real institution badge rather than a conference lanyard.
+
+### QR code generation and download
+
+Every employee's card has an auto-generated QR code pointing to their public URL (`/card/[id]`). I used `qrcode.react` with two separate components for different purposes:
+
+- `QRCodeSVG` — renders inline for display, scales perfectly at any size
+- `QRCodeCanvas` — used only when the user clicks "Download QR" to generate a high-resolution 512px PNG
+
+```typescript
+const downloadQR = () => {
+  const canvas = document.getElementById("qr-canvas") as HTMLCanvasElement;
+  const pngUrl = canvas
+    .toDataURL("image/png")
+    .replace("image/png", "image/octet-stream");
+  const link = document.createElement("a");
+  link.href = pngUrl;
+  link.download = `${profile.full_name.replace(/\s+/g, "-")}-QR.png`;
+  link.click();
+};
+```
+
+The downloaded file is named after the employee — `Subhajit-Dolai-QR.png` — which makes it easy to organize and print on physical materials like desk nameplates or conference badges.
+
+### vCard download: saving contacts the right way
+
+Clicking "Save Contact" on the public card page downloads a `.vcf` file — a standard vCard format that every phone on the planet understands. When someone taps the button, their phone's native contact-saving UI opens with all details pre-filled.
+
+I generate the vCard as a `text/vcard` Blob entirely client-side:
+
+```typescript
+const generateVCard = (profile: Profile): string => {
+  const vcard = [
+    "BEGIN:VCARD",
+    "VERSION:3.0",
+    `FN:${profile.full_name}`,
+    `N:${profile.last_name};${profile.first_name};;;`,
+    `ORG:MIT World Peace University;${profile.department}`,
+    `TITLE:${profile.designation}`,
+    `EMAIL;TYPE=WORK:${profile.email}`,
+    profile.phone ? `TEL;TYPE=WORK:${profile.phone}` : "",
+    profile.website ? `URL:${profile.website}` : "",
+    `URL:${process.env.NEXT_PUBLIC_APP_URL}/card/${profile.id}`,
+    "END:VCARD",
+  ]
+    .filter(Boolean)
+    .join("\r\n");
+  return vcard;
+};
+
+const handleSaveContact = () => {
+  const vcardContent = generateVCard(profile);
+  const blob = new Blob([vcardContent], { type: "text/vcard" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = `${profile.full_name}.vcf`;
+  link.click();
+  URL.revokeObjectURL(url);
+};
+```
+
+The vCard is RFC 3.0-compliant, which means it works with iPhone Contacts, Google Contacts, Outlook, and every other major contact manager. No server call, no dependency — just a Blob created in memory and immediately downloaded.
+
+## Authentication and onboarding
+
+### Invitation-based account setup
+
+Employees don't sign up for Digital ID like they would a consumer app — they're invited. An admin creates their account, then the system sends an invitation email with a signed token. The employee clicks the link and lands on `/set-password?token=...` where they set their password for the first time.
+
+This pattern means:
+- Zero self-registration — only people the institution approves get accounts
+- No "forgot to verify email" support tickets — the invitation flow handles verification
+- Clean audit trail — every account was explicitly created by an admin
+
+Supabase Auth handles the token verification and password setting; the UI just calls the appropriate auth method based on the URL parameter.
+
+### Full onboarding flow
+
+After setting their password, new employees go through a guided onboarding flow. They fill in their designation, department, phone number, and optionally upload a profile photo. The flow is step-by-step so it doesn't feel overwhelming — each screen asks for one thing and moves forward.
+
+The avatar upload uses Supabase Storage with a dedicated `avatars` bucket. Images are stored as `{user_id}/avatar`, so overwriting works cleanly without accumulating orphaned files.
+
+## The admin panel: institutional-scale management
+
+### Role hierarchy
+
+The system has three roles: Employee, Admin, and Super Admin. Each has scoped permissions:
+
+| Role | Can do |
+|------|--------|
+| Employee | Manage own profile, control own card visibility |
+| Admin | View all employees, manage profiles, activate/deactivate cards |
+| Super Admin | Everything above + manage admin accounts + manage super admins |
+
+Roles are stored on the `profiles` table and enforced by both RLS policies and server-side middleware. An employee navigating directly to `/admin/employees` gets redirected — the middleware checks the role before rendering.
+
+### Employee management table
+
+The admin's primary workspace is a searchable, sortable table showing all employees with their avatar, name, designation, department, account status, and card visibility. Inline actions let admins:
+
+- Edit any employee's profile details
+- Activate or deactivate an employee's card
+- Require a password reset on next login
+- Add new employees (which triggers the invitation flow)
+
+Pagination keeps the table fast even as the employee count grows. Search filters by name, department, or designation — built as a controlled input that debounces before querying to avoid hammering the database on every keystroke.
+
+## Privacy and security
+
+### The double-guard pattern
+
+The most critical security decision in the entire system is how public cards are protected. An admin can deactivate a card the moment an employee leaves the institution. From that point, their card at `/card/[id]` must show a "private" state — no name, no contact details, nothing.
+
+I enforce this at two levels:
+
+1. **Database (RLS)** — The `SELECT` policy on `profiles` only returns rows where `is_public = true AND is_active = true`. If either flag is false, the query returns no data.
+2. **Application layer** — The page component checks if data was returned and renders a locked-card UI if not.
+
+Even if someone tried to bypass the application layer, they'd get nothing from the database. Defense in depth.
+
+### No secrets on the client
+
+Every privileged operation — role changes, activating/deactivating accounts, admin management — runs in Next.js Server Actions or Route Handlers. The `service_role` Supabase key that can bypass RLS never leaves the server. The client only ever holds the anonymous key, which is subject to the RLS policies.
+
+### Middleware route protection
+
+Auth middleware runs on every request and checks the session:
+
+```typescript
+export async function middleware(request: NextRequest) {
+  const { pathname } = request.nextUrl;
+
+  // Whitelist: public card page needs no auth
+  if (pathname.startsWith("/card/")) return NextResponse.next();
+
+  // Auth pages: redirect to home if already logged in
+  if (isAuthRoute(pathname)) {
+    if (session) return NextResponse.redirect(new URL("/", request.url));
+    return NextResponse.next();
+  }
+
+  // Everything else: require session
+  if (!session) {
+    return NextResponse.redirect(new URL("/login", request.url));
+  }
+
+  // Admin routes: require admin role
+  if (pathname.startsWith("/admin") && !isAdmin(user)) {
+    return NextResponse.redirect(new URL("/", request.url));
+  }
+
+  return NextResponse.next();
+}
+```
+
+The whitelist approach for `/card/[id]` is intentional. Every other route is protected by default — you have to explicitly allow public access. This means adding a new page can never accidentally expose authenticated content.
+
+## What I learned building this
+
+### Design before code — really
+
+I spent two full days in Figma before writing any application code. This felt slow at the time, but it was the most leveraged investment in the project. When I sat down to build the flip card component, I already knew exactly what it needed to look like, what states it had, and how it behaved. There was no "let me figure it out as I go" — just implementation of a spec.
+
+For any project where the UI is a central feature (and here, the card *is* the product), design-first is not optional.
+
+### RLS is the right place for authorization
+
+I've built systems where authorization logic lives in middleware, in service layers, in utility functions. Digital ID was the most thorough I've been with putting authorization in RLS policies — and it was the right call. The day I tested what happens when you disable an employee's card, the database simply returned nothing. No application code change needed. The policy enforced it everywhere: the web app, any future mobile app, any API integration. Authorization that lives in the database is authorization that can't be bypassed.
+
+### The public page is your product
+
+Most of the engineering complexity lives in the authenticated flows — onboarding, profile editing, admin management. But the page that actually matters is `/card/[id]`. That's what the external world sees when someone scans a QR code. It needs to be fast, beautiful, and work flawlessly on a phone in 5 seconds.
+
+I ended up optimizing the public card page much more aggressively than the authenticated pages: server-side rendering, no unnecessary client-side JavaScript, mobile-first layout, and a loading state that's virtually invisible because the server returns fully-rendered HTML.
+
+### Small projects can have real impact
+
+Digital ID serves 2,500+ staff members — faculty, administrators, and support staff — not the entire student body. It's a targeted tool for a specific audience, and that's exactly right. When I think about the hundreds of reprints that won't happen, the chemical waste from lamination that won't occur, and the administrative hours saved, the impact is real and tangible even at that scale.
+
+Some of the most satisfying engineering is solving the right problem at the right scale. Not everything needs to be planet-scale to matter.
+
+---
+
+Digital ID is live for MIT World Peace University employees. If you're working on similar institutional tech — digital identity, sustainability initiatives, or campus infrastructure — I'd love to compare notes.
+
+**Reach out on [LinkedIn](https://linkedin.com/in/subhajit-dolai)** or explore [the live system](https://digital-id-theta.vercel.app/).

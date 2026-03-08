@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { ArrowUpRight } from "lucide-react";
 import Link from "next/link";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import Markdown from "react-markdown";
 
 function ProjectImage({ src, alt }: { src: string; alt: string }) {
@@ -56,6 +56,26 @@ export function ProjectCard({
   links,
   className,
 }: Props) {
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const [videoVisible, setVideoVisible] = useState(false);
+
+  useEffect(() => {
+    if (!video) return;
+    const el = videoRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setVideoVisible(true);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.1 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [video]);
+
   return (
     <div
       className={cn(
@@ -72,44 +92,22 @@ export function ProjectCard({
         >
           {video ? (
             <video
-              ref={useRef<HTMLVideoElement | null>(null)}
-              src={video}
+              ref={videoRef}
+              src={videoVisible ? video : undefined}
               poster={videoPoster}
               autoPlay
               loop
               muted
               playsInline
-              preload="auto"
+              preload="none"
               onEnded={(e) => {
                 const v = e.currentTarget as HTMLVideoElement;
-                // Ensure loop restarts even if browser had a hiccup
                 try {
                   v.currentTime = 0;
                   v.play().catch(() => {});
-                } catch (err) {
+                } catch {
                   // ignore
                 }
-              }}
-              onWaiting={(e) => {
-                const v = e.currentTarget as HTMLVideoElement;
-                // try to resume after brief wait
-                setTimeout(() => {
-                  v.play().catch(() => {});
-                }, 250);
-              }}
-              onStalled={(e) => {
-                const v = e.currentTarget as HTMLVideoElement;
-                // reload and try to continue
-                v.load();
-                setTimeout(() => {
-                  v.play().catch(() => {});
-                }, 300);
-              }}
-              onError={(e) => {
-                const v = e.currentTarget as HTMLVideoElement;
-                // try a quick reload
-                v.load();
-                setTimeout(() => v.play().catch(() => {}), 300);
               }}
               className="w-full h-48 object-cover"
             />
