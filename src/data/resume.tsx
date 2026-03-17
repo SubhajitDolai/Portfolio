@@ -178,7 +178,7 @@ export const DATA = {
     },
     {
       title: "Digital ID — Digital Visiting Card System",
-      href: "https://digital-id-theta.vercel.app/",
+      href: "https://vcard.mitwpu.edu.in/",
       dates: "March 2026",
       active: true,
       description:
@@ -195,7 +195,7 @@ export const DATA = {
         "Vercel",
       ],
       links: [
-        { type: "Live", href: "https://digital-id-theta.vercel.app/", icon: <Icons.globe className="size-3" /> },
+        { type: "Live", href: "https://vcard.mitwpu.edu.in/", icon: <Icons.globe className="size-3" /> },
         { type: "Source", href: "https://github.com/SubhajitDolai/DigitalID", icon: <Icons.github className="size-3" /> },
       ],
       image: "",
