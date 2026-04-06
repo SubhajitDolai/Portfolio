@@ -224,8 +224,8 @@ export default function Page() {
           <ContactSection />
         </BlurFade>
       </section>
-      <JsonLd data={structuredData} />
-      <JsonLd data={breadcrumbLd} />
+      <JsonLd id="home-structured-data" data={structuredData} />
+      <JsonLd id="home-breadcrumb-data" data={breadcrumbLd} />
     </main>
   );
 }

@@ -1,17 +1,17 @@
-import React from 'react';
+import Script from "next/script";
 
 interface JsonLdProps {
   data: Record<string, any>;
+  id: string;
 }
 
-export default function JsonLd({ data }: JsonLdProps) {
-  const json = JSON.stringify(data).replace(/</g, '\\u003c');
-
+export default function JsonLd({ data, id }: JsonLdProps) {
   return (
-    <script
+    <Script
+      id={id}
       type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: json }}
-      suppressHydrationWarning
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }}
+      strategy="afterInteractive"
     />
   );
-} 
+}

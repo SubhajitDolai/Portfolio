@@ -13,7 +13,9 @@ export default function FirstLoadLoader() {
     try {
       const shown = localStorage.getItem(STORAGE_KEY);
       if (shown) return; // already shown before
-      setVisible(true);
+      requestAnimationFrame(() => {
+        if (mounted) setVisible(true);
+      });
       const start = Date.now();
 
       const finish = () => {
@@ -44,7 +46,9 @@ export default function FirstLoadLoader() {
       }
     } catch (e) {
       // if localStorage is blocked/throws, show briefly
-      setVisible(true);
+      requestAnimationFrame(() => {
+        if (mounted) setVisible(true);
+      });
       const t = setTimeout(() => setVisible(false), MIN_MS);
       return () => clearTimeout(t);
     }

@@ -41,26 +41,29 @@ export const DATA = {
   contact: {
     email: "subhajitdolai999@gmail.com",
     tel: "+91-9172660318",
-    social: {
-      GitHub: {
+    social: [
+      {
         name: "GitHub",
+        label: "GitHub",
         url: "https://github.com/subhajitdolai",
         icon: Icons.github,
         navbar: true,
       },
-      LinkedIn: {
+      {
         name: "LinkedIn",
+        label: "LinkedIn",
         url: "https://www.linkedin.com/in/subhajit-dolai",
         icon: Icons.linkedin,
         navbar: true,
       },
-      email: {
+      {
         name: "Send Email",
+        label: "Send Email",
         url: "mailto:subhajitdolai999@gmail.com",
         icon: Icons.email,
         navbar: true,
       },
-    },
+    ],
   },
 
   work: [

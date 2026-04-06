@@ -7,6 +7,7 @@ import { MDXContent } from "@content-collections/mdx/react";
 import { mdxComponents } from "@/mdx-components";
 import Link from "next/link";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import JsonLd from "@/components/JsonLd";
 
 function getSortedPosts() {
   return [...allPosts].sort((a, b) => {
@@ -162,20 +163,8 @@ export default async function Blog({
 
   return (
     <section id="blog">
-      <script
-        type="application/ld+json"
-        suppressHydrationWarning
-        dangerouslySetInnerHTML={{
-          __html: jsonLdContent,
-        }}
-      />
-      <script
-        type="application/ld+json"
-        suppressHydrationWarning
-        dangerouslySetInnerHTML={{
-          __html: breadcrumbLd,
-        }}
-      />
+      <JsonLd id="blog-post-ld" data={JSON.parse(jsonLdContent)} />
+      <JsonLd id="blog-breadcrumb-ld" data={JSON.parse(breadcrumbLd)} />
       <div className="flex justify-start gap-4 items-center">
         <Link href="/blog" className="text-sm text-muted-foreground hover:text-foreground transition-colors border border-border rounded-lg px-2 py-1 inline-flex items-center gap-1 mb-6 group" aria-label="Back to Blog">
           <ChevronLeft className="size-3 group-hover:-translate-x-px transition-transform" />

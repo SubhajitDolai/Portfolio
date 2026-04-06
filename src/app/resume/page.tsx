@@ -136,7 +136,7 @@ export default function ResumePage() {
         </div>
       </section>
 
-      <JsonLd data={resumeStructuredData} />
+      <JsonLd id="resume-structured-data" data={resumeStructuredData} />
     </main>
   );
 }
