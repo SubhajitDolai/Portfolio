@@ -75,19 +75,19 @@ export const DATA = {
       title: "Software Developer — Registrar Office (Part-Time)",
       logoUrl: "/mitwpu.png",
       start: "Aug 2025",
-      end: "Present",
+      end: "May 2026",
       description:
-        "Building and deploying CampusBook, a full-stack infrastructure management platform optimizing booking, scheduling, and resource utilization for 2,000+ faculty members. Implemented role-based access, automated approval workflows, and real-time analytics dashboards.",
+        "Building and deploying CampusBook, a full-stack infrastructure management platform optimizing booking, scheduling, and resource utilization for 2,000+ faculty members. Implemented role-based access, automated approval workflows, and real-time analytics dashboards.\n\nDeveloped Digital ID, a campus-wide digital visiting card system for MIT-WPU, reducing paper waste and costs via role-based admin controls, 3D flip-cards, automated QR generation, and one-tap contact downloads (.vcf).",
     },
     {
       company: "MIT World Peace University",
       badges: [],
       href: "https://mitwpu.edu.in/",
       location: "Pune, India",
-      title: "Full-Stack Developer — Sports & IT Departments (Part-Time)",
+      title: "Software Developer — Sports & IT Department (Part-Time)",
       logoUrl: "/mitwpu.png",
       start: "May 2025",
-      end: "Aug 2025",
+      end: "May 2026",
       description:
         "Built Courtside, a campus-wide sports facility management system for 25,000+ users, with automated bookings, real-time slot synchronization (<200ms latency), IoT QR check-ins, and an integrated Generative AI assistant for 24/7 support.",
     },
@@ -99,7 +99,7 @@ export const DATA = {
       degree: "B.Sc. Computer Science — Specialization: Data Science & Big Data Analytics",
       logoUrl: "/mitwpu.png",
       start: "July 2023",
-      end: "Present",
+      end: "June 2026",
     },
   ],
   projects: [
