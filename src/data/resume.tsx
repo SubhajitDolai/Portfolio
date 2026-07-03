@@ -131,7 +131,7 @@ export const DATA = {
       videoPoster: "/images/courtside-poster.jpg",
     },
     {
-      title: "CampusBook — University Resource Booking System",
+      title: "CampusBook — University Resource Management",
       href: "https://infra.mitwpu.edu.in/",
       dates: "Aug 2025 - Present",
       active: true,
