@@ -96,6 +96,14 @@ export const DATA = {
     {
       school: "MIT World Peace University",
       href: "https://mitwpu.edu.in/",
+      degree: "M.Sc. Computer Science",
+      logoUrl: "/mitwpu.png",
+      start: "July 2026",
+      end: "Present",
+    },
+    {
+      school: "MIT World Peace University",
+      href: "https://mitwpu.edu.in/",
       degree: "B.Sc. Computer Science — Specialization: Data Science & Big Data Analytics",
       logoUrl: "/mitwpu.png",
       start: "July 2023",
