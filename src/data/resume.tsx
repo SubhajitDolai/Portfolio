@@ -68,6 +68,18 @@ export const DATA = {
 
   work: [
     {
+      company: "SD Technologies",
+      href: "https://www.subhajitdolai.dev",
+      badges: [],
+      location: "Pune, India",
+      title: "Founder | Building Scalable Digital Solutions",
+      logoUrl: "/logo.png",
+      start: "Jul 2026",
+      end: "Present",
+      description:
+        "Founded SD Technologies, a software development company building and deploying scalable web platforms for educational institutions and businesses. Delivering end-to-end solutions covering system design, full-stack development, cloud deployment, and long-term maintenance.\n\nBuilt and shipped production systems serving thousands of users, with real-time data synchronization, role-based access control, automated workflows, integrated AI features, and analytics dashboards using Next.js, TypeScript, Supabase, and PostgreSQL.",
+    },
+    {
       company: "MIT World Peace University",
       href: "https://mitwpu.edu.in/",
       badges: [],
